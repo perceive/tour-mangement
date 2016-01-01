@@ -22,6 +22,7 @@
              'report_saleorder_custom.xml',
              'sale_report.xml',
              'views/tour_query_report.xml',
+             'crm_lead_view.xml',
  'report.xml',
     ],    'demo': [],
     'installable': True,

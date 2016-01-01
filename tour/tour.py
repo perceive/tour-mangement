@@ -582,8 +582,8 @@ class tour_query_line(models.Model):
                     
 class tour_query(models.Model):
     _name ='tour.query'
-    _inherit = ['mail.thread']    
-    _description='query'        
+    _inherit = ['mail.thread']
+    _description='query'
     name = fields.Char('Query Name',readonly=True)
     customer_id = fields.Many2one(
         'res.partner',
