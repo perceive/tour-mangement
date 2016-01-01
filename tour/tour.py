@@ -278,8 +278,6 @@ class tour_ext_line(models.Model):
     extraction_id = fields.Many2one('tour.extraction',string='Essentials')
     ess_id = fields.Many2many('tour.essentials',id1='line_i', id2='inv_id',string='Essentials')
                                   
-        
-        
 
 class tour_extraction(models.Model):
     _name ='tour.extraction'
@@ -352,8 +350,8 @@ class tour_ticket(models.Model):
     query=fields.Many2one('crm.lead')
     ticket_date = fields.Date('Date of Travel ')
     ticket_return = fields.Date('Date of return ')
-    ref_type= fields.Selection([ ('economy','Economy'), ('first','First class'), ],'Class of travel ')
-    mode_type= fields.Selection([ ('bus','Bus'), ('train','Train'),('air','Air') ],'Mode of travel ')   
+    ref_type= fields.Selection([ ('economy','Economy'), ('first','First class'),('business','Business class'), ('premium','Premium Economy') ],'Class of travel ', default='economy')
+    mode_type= fields.Selection([ ('bus','Bus'), ('train','Train'),('air','Air') ],'Mode of travel', default='air')
     client_felxi = fields.Boolean('Client Flexible')
     oneway = fields.Boolean('One way')
     twoway = fields.Boolean('Return')
@@ -590,45 +588,48 @@ class tour_query(models.Model):
         'Customer', required=True,
         help="Name of Passenger."
     )
-    tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True)
-    ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor')
-    tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Ticket Vendor')
-    tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor')
-    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True)
-    adult_no = fields.Integer('Number of Adult')
-    cwb_no = fields.Integer('Number of Child with bed CWB')
-    cw_no = fields.Integer('Number of Child without Bed CNB')
-    to_date = fields.Date('Start Date',required=True)
-    extra_no = fields.Integer('Extra Adult')
-    infants = fields.Integer('Number of infants')
-    hotel = fields.Boolean('Hotel')
-    visa_p = fields.Boolean('Visa')
-    passport=fields.Boolean('Passport')
-    ticket = fields.Boolean('Ticket')
-    trnsport = fields.Boolean('Transportation')
-    extraction = fields.Boolean('Excursion')
-    insuracne = fields.Boolean('Insurance')
-    all_ids=fields.One2many('tour.hotel.all', 'tour_id', 'Hotel/Vendor/Invoice Detail', )
-    vendor = fields.Boolean('Hotel Vendor')
-    direct = fields.Boolean('Direct Hotel')
-    company_id= fields.Many2one('res.company', 'Company')
+    tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True, track_visibility='onchange')
+    ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor', track_visibility='onchange')
+    tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor', track_visibility='onchange')
+    tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor', track_visibility='onchange')
+    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True, track_visibility='onchange',)
+    adult_no = fields.Integer('Number of Adult', track_visibility='onchange')
+    cwb_no = fields.Integer('CWB', track_visibility='onchange')
+    cw_no = fields.Integer('CNB', track_visibility='onchange')
+    to_date = fields.Date('Start Date',required=True, track_visibility='onchange')
+    extra_no = fields.Integer('Extra Adult', track_visibility='onchange')
+    infants = fields.Integer('Number of infants', track_visibility='onchange')
+    hotel = fields.Boolean('Hotel', track_visibility='onchange')
+    visa_p = fields.Boolean('Visa', track_visibility='onchange')
+    passport=fields.Boolean('Passport', track_visibility='onchange')
+    ticket = fields.Boolean('Ticket', track_visibility='onchange')
+    trnsport = fields.Boolean('Transportation', track_visibility='onchange')
+    extraction = fields.Boolean('Excursion', track_visibility='onchange')
+    insuracne = fields.Boolean('Insurance', track_visibility='onchange')
+    all_ids=fields.One2many('tour.hotel.all', 'tour_id', 'Hotel/Vendor/Invoice Detail', track_visibility='onchange')
+    vendor = fields.Boolean('Hotel Vendor', track_visibility='onchange',)
+    direct = fields.Boolean('Direct Hotel', track_visibility='onchange')
     hotel_id = fields.Many2one(
         'tour.hotel',
         'Hotel',
+        track_visibility='onchange',
     )
 
     visa_id = fields.Many2one(
         'tour.visa',
         'Visa',
+        track_visibility='onchange',
     )
     transport_ids = fields.One2many(
          'tour.transport','query',
          'Transport',
+        track_visibility='onchange',
      )
 
     sale_id = fields.Many2one(
         'sale.order',
         'Sale Order',
+        track_visibility='onchange',
     )
 
 #     ticket_id = fields.One2many(
@@ -642,22 +643,23 @@ class tour_query(models.Model):
     passport_id = fields.Many2one(
         'tour.passport',
         'Passport',
+        track_visibility='onchange',
     )
-    vender_ids=fields.Many2many('tour.hotel.vender', 'vendor_test_rel', 'hote_id', 'wizard_id',string='Vendor Detail')
+    vender_ids=fields.Many2many('tour.hotel.vender', 'vendor_test_rel', 'hote_id', 'wizard_id',string='Vendor Detail', track_visibility='onchange')
    # vender_ids':fields.many2many('tour.hotel.vender','vendor_rel', 'user_id', 'wizard_id',string='Vendor Detail')
-    invoice=fields.Many2many('account.invoice','test_rel','test_2id','id2_test','Last invoice')
+    invoice=fields.Many2many('account.invoice','test_rel','test_2id','id2_test','Last invoice', track_visibility='onchange')
     #'invoice': fields.many2many('account.invoice', 'account_user_rel', 'user_id', 'wizard_id', 'Last invoice'),
    # extraction_id = fields.One2many('tour.extraction', 'query',string='E,xcursion')
-    emp_id = fields.Many2one('hr.employee',string='Employee')
+    emp_id = fields.Many2one('hr.employee',string='Employee', track_visibility='onchange')
 
-    days= fields.Integer('No of Night',required=True)
-    line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', )
-    ticket_emp_id = fields.Many2one('hr.employee',string='Ticket Employee')
-    ticket_ids=fields.One2many('tour.ticket', 'query', 'Ticket Detail', )
+    days= fields.Integer('No of Night',required=True, track_visibility='onchange')
+    line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', track_visibility='onchange')
+    ticket_emp_id = fields.Many2one('hr.employee',string='Employee', track_visibility='onchange')
+    ticket_ids=fields.One2many('tour.ticket', 'query', 'Ticket Detail', track_visibility='onchange',)
     state =fields.Selection([
             ('draft', 'Not Confirmed'),
             ('done', 'Confirmed'),
-            ('cancel','Cancel') ])
+            ('cancel','Cancel') ], track_visibility='onchange',)
     def copy(self, cr, uid, id, default=None, context=None):
         default = default or {}
         context = context or {}
