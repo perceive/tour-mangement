@@ -16,8 +16,8 @@
                     <field name="cw_no"/>
                     <field name="infants"/>
                     <field name="extra_no"  class="oe_inline"/>
+                    <field name="location_id" string="Destination" widget="many2many_tags" />
                 </field>
-
                 <field name="priority" position="after">
                     <field name="ticket"/>
                     <field name="hotel"/>
@@ -114,6 +114,7 @@
                     <!--</group>-->
                 <!--</page>-->
                 <!--</xpath>-->
+
             </field>
         </record>
     </data>
