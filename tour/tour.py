@@ -159,37 +159,37 @@ class tour_hotel_vender(models.Model):
     _name = 'tour.hotel.vender'
     _inherit = ['mail.thread']
 
-    part_id = fields.Many2one('res.partner','Vendor Invoice')    
+    part_id = fields.Many2one('res.partner','Vendor Invoice')
     name = fields.Char('Name of Vendor', required=True)
     line_ids=fields.One2many('tour.hotel.vender.line', 'vendor_id', 'PHS', )
     phone = fields.Char('Vendor Phone', required=True)
     zip_id = fields.Many2one(
-        'res.better.zip',string='City/Location')    
+        'res.better.zip',string='City/Location')
 #         'zip': fields.char('Zip', change_default=True, size=24),
 #         'city': fields.char('City'),
 #         'state_id': fields.many2one("res.country.state", 'State'),
-#         'country_id': fields.many2one('res.country', 'Country')    
+#         'country_id': fields.many2one('res.country', 'Country')
     email = fields.Char(
-                     string='Email',required=True)      
-    
+                     string='Email',required=True)
+
     #
     street = fields.Char('Street', )
-    street2 = fields.Char('Street2')    
+    street2 = fields.Char('Street2')
      
     
-#     partner_id = fields.Many2one(
-#         'res.partner',
-#         'Contact Person',
-#         help="Contact Person.",)    
-#     zip_id = fields.Many2one(
-#         'res.better.zip',string='City/Location')    
-#     partner_id = fields.Many2one(
-#         'res.partner',
-#         'Contact Person',
-#         help="Contact Person.",)
-#     email = fields.Char(
-#         string='Email',)    
-#    
+    partner_id = fields.Many2one(
+        'res.partner',
+        'Contact Person',
+        help="Contact Person.",)
+    zip_id = fields.Many2one(
+        'res.better.zip',string='City/Location')
+    partner_id = fields.Many2one(
+        'res.partner',
+        'Contact Person',
+        help="Contact Person.",)
+    email = fields.Char(
+        string='Email',)
+
 class res_partner(models.Model):
     _inherit = 'res.partner'
     dob= fields.Date('Date of Birth ', )
@@ -349,7 +349,7 @@ class tour_ticket(models.Model):
     _description='Ticket'        
     _inherit = ['mail.thread']      
     name = fields.Char('Name', required=True)
-    query=fields.Many2one('tour.query')
+    query=fields.Many2one('crm.lead')
     ticket_date = fields.Date('Date of Travel ')
     ticket_return = fields.Date('Date of return ')
     ref_type= fields.Selection([ ('economy','Economy'), ('first','First class'), ],'Class of travel ')
@@ -446,7 +446,7 @@ class tour_transport(models.Model):
     _inherit = ['mail.thread']          
     name = fields.Char('Name', required=True)
     no_day = fields.Char('No of Days')
-    query =fields.Many2one('tour.query','Tour')
+    query =fields.Many2one('crm.lead','Tour')
     type_mode= fields.Selection([ ('point','Point to Point (P2P)'), ('dispo','Disposal'), ],' Select mode of transport')   
     vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor') 
     vehicle =fields.Char('Vehicle')
@@ -481,7 +481,7 @@ class tour_hotel_all(models.Model):
     _rec_name = 'hotel_id'
     check_in=fields.Date('Check IN')
     check_out=fields.Date('Check OUT')
-    tour_id =fields.Many2one('tour.query','Tour')
+    tour_id =fields.Many2one('crm.lead','Tour')
     hotel_id  = fields.Many2one('tour.hotel', 'Hotel', required=True)
     mean_id=fields.Many2one('tour.hotel.meal','Meal Plan')
     vender_ids = fields.Many2many('tour.hotel.vender',id1='line_id', id2='val_id',string='Vendor Detail')
@@ -550,7 +550,7 @@ class tour_query_line(models.Model):
     name = fields.Char('Day', required=True)
     city = fields.Many2one('res.better.zip',"City")
     to_date = fields.Date('To Date')
-    query = fields.Many2one('tour.query',"Query")
+    query = fields.Many2one('crm.lead',"Query")
     price = fields.Float(string="Price")
     end_date = fields.Date('End Date')
     hotel_id = fields.Many2one(
@@ -580,301 +580,301 @@ class tour_query_line(models.Model):
 
         return {'value': {}}
                     
-class tour_query(models.Model):
-    _name ='tour.query'
-    _inherit = ['mail.thread']
-    _description='query'
-    name = fields.Char('Query Name',readonly=True)
-    customer_id = fields.Many2one(
-        'res.partner',
-        'Customer', required=True,
-        help="Name of Passenger."
-    )
-    tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True)
-    ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor')
-    tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Ticket Vendor')
-    tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor')
-    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True)
-    adult_no = fields.Integer('Number of Adult')
-    cwb_no = fields.Integer('Number of Child with bed CWB')
-    cw_no = fields.Integer('Number of Child without Bed CNB')
-    to_date = fields.Date('Start Date',required=True)
-    extra_no = fields.Integer('Extra Adult')
-    infants = fields.Integer('Number of infants')
-    hotel = fields.Boolean('Hotel')
-    visa_p = fields.Boolean('Visa')
-    passport=fields.Boolean('Passport')
-    ticket = fields.Boolean('Ticket')
-    trnsport = fields.Boolean('Transportation')  
-    extraction = fields.Boolean('Excursion')            
-    insuracne = fields.Boolean('Insurance') 
-    all_ids=fields.One2many('tour.hotel.all', 'tour_id', 'Hotel/Vendor/Invoice Detail', )
-    vendor = fields.Boolean('Hotel Vendor')            
-    direct = fields.Boolean('Direct Hotel') 
-    company_id= fields.Many2one('res.company', 'Company')
-    hotel_id = fields.Many2one(
-        'tour.hotel',
-        'Hotel',
-    )
-    
-    visa_id = fields.Many2one(
-        'tour.visa',
-        'Visa',
-    )   
-    transport_ids = fields.One2many(
-         'tour.transport','query',
-         'Transport',
-     )
-    
-    sale_id = fields.Many2one(
-        'sale.order',
-        'Sale Order',
-    )
-   
-#     ticket_id = fields.One2many(
-#         'tour.ticket',
-#         'Ticket',
-#     ) 
-#     insurance_id = fields.Many2one(
-#         'tour.insurance',
-#         'Insurance',
+# class tour_query(models.Model):
+#     _name ='tour.query'
+#     _inherit = ['mail.thread']
+#     _description='query'
+#     name = fields.Char('Query Name',readonly=True)
+#     customer_id = fields.Many2one(
+#         'res.partner',
+#         'Customer', required=True,
+#         help="Name of Passenger."
 #     )
-    passport_id = fields.Many2one(
-        'tour.passport',
-        'Passport',
-    )               
-    vender_ids=fields.Many2many('tour.hotel.vender', 'vendor_test_rel', 'hote_id', 'wizard_id',string='Vendor Detail')
-   # vender_ids':fields.many2many('tour.hotel.vender','vendor_rel', 'user_id', 'wizard_id',string='Vendor Detail')
-    invoice=fields.Many2many('account.invoice','test_rel','test_2id','id2_test','Last invoice')  
-    #'invoice': fields.many2many('account.invoice', 'account_user_rel', 'user_id', 'wizard_id', 'Last invoice'),
-   # extraction_id = fields.One2many('tour.extraction', 'query',string='E,xcursion')
-    emp_id = fields.Many2one('hr.employee',string='Employee')
-    
-    days= fields.Integer('No of Night',required=True)
-    line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', )
-    ticket_emp_id = fields.Many2one('hr.employee',string='Ticket Employee')
-    ticket_ids=fields.One2many('tour.ticket', 'query', 'Ticket Detail', )
-    state =fields.Selection([
-            ('draft', 'Not Confirmed'),   
-            ('done', 'Confirmed'),
-            ('cancel','Cancel') ])
-    def copy(self, cr, uid, id, default=None, context=None):
-        default = default or {}
-        context = context or {}
-        if not default.get('line_ids'):
-            #we don't want to propagate the link to the purchase order line except in case of move split
-            default['line_ids'] = False
-        default['sale_id'] = False   
-        return super(tour_query, self).copy(cr, uid, id, default, context)
-    
-#     
-#     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False, context=None):
-#         res = {}
+#     tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True)
+#     ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor')
+#     tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Ticket Vendor')
+#     tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor')
+#     location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True)
+#     adult_no = fields.Integer('Number of Adult')
+#     cwb_no = fields.Integer('Number of Child with bed CWB')
+#     cw_no = fields.Integer('Number of Child without Bed CNB')
+#     to_date = fields.Date('Start Date',required=True)
+#     extra_no = fields.Integer('Extra Adult')
+#     infants = fields.Integer('Number of infants')
+#     hotel = fields.Boolean('Hotel')
+#     visa_p = fields.Boolean('Visa')
+#     passport=fields.Boolean('Passport')
+#     ticket = fields.Boolean('Ticket')
+#     trnsport = fields.Boolean('Transportation')
+#     extraction = fields.Boolean('Excursion')
+#     insuracne = fields.Boolean('Insurance')
+#     all_ids=fields.One2many('tour.hotel.all', 'tour_id', 'Hotel/Vendor/Invoice Detail', )
+#     vendor = fields.Boolean('Hotel Vendor')
+#     direct = fields.Boolean('Direct Hotel')
+#     company_id= fields.Many2one('res.company', 'Company')
+#     hotel_id = fields.Many2one(
+#         'tour.hotel',
+#         'Hotel',
+#     )
+#
+#     visa_id = fields.Many2one(
+#         'tour.visa',
+#         'Visa',
+#     )
+#     transport_ids = fields.One2many(
+#          'tour.transport','query',
+#          'Transport',
+#      )
+#
+#     sale_id = fields.Many2one(
+#         'sale.order',
+#         'Sale Order',
+#     )
+#
+# #     ticket_id = fields.One2many(
+# #         'tour.ticket',
+# #         'Ticket',
+# #     )
+# #     insurance_id = fields.Many2one(
+# #         'tour.insurance',
+# #         'Insurance',
+# #     )
+#     passport_id = fields.Many2one(
+#         'tour.passport',
+#         'Passport',
+#     )
+#     vender_ids=fields.Many2many('tour.hotel.vender', 'vendor_test_rel', 'hote_id', 'wizard_id',string='Vendor Detail')
+#    # vender_ids':fields.many2many('tour.hotel.vender','vendor_rel', 'user_id', 'wizard_id',string='Vendor Detail')
+#     invoice=fields.Many2many('account.invoice','test_rel','test_2id','id2_test','Last invoice')
+#     #'invoice': fields.many2many('account.invoice', 'account_user_rel', 'user_id', 'wizard_id', 'Last invoice'),
+#    # extraction_id = fields.One2many('tour.extraction', 'query',string='E,xcursion')
+#     emp_id = fields.Many2one('hr.employee',string='Employee')
+#
+#     days= fields.Integer('No of Night',required=True)
+#     line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', )
+#     ticket_emp_id = fields.Many2one('hr.employee',string='Ticket Employee')
+#     ticket_ids=fields.One2many('tour.ticket', 'query', 'Ticket Detail', )
+#     state =fields.Selection([
+#             ('draft', 'Not Confirmed'),
+#             ('done', 'Confirmed'),
+#             ('cancel','Cancel') ])
+#     def copy(self, cr, uid, id, default=None, context=None):
+#         default = default or {}
+#         context = context or {}
+#         if not default.get('line_ids'):
+#             #we don't want to propagate the link to the purchase order line except in case of move split
+#             default['line_ids'] = False
+#         default['sale_id'] = False
+#         return super(tour_query, self).copy(cr, uid, id, default, context)
+#
+# #
+# #     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False, context=None):
+# #         res = {}
+# #         case_obj = self.pool.get('tour.query')
+# #         vendor_obj=self.pool.get('tour.hotel.vender')
+# #         vendor_obje_line=self.pool.get('tour.hotel.vender.line')
+# #         data = context and context.get('active_ids', []) or []
+# #         list1=[]
+# #         if hotel_ids:
+# #             line_ids=vendor_obje_line.search(cr,uid,[('hotel_id','=',hotel_ids)])
+# #             if line_ids:
+# #                 for data in vendor_obje_line.browse(cr,uid,line_ids,context):
+# #                     list1.append(data.vendor_id.id)
+# #             else:
+# #                 res['value'] = {'vender_ids': []}
+# #             res['value'] = {'vender_ids': list1}
+# #         return res
+#
+#     def open_invoices(self, cr, uid, ids, invoice_ids, context=None):
+#         """ open a view on one of the given invoice_ids """
+#         ir_model_data = self.pool.get('ir.model.data')
+#         form_res = ir_model_data.get_object_reference(cr, uid, 'account', 'invoice_form')
+#         form_id = form_res and form_res[1] or False
+#         tree_res = ir_model_data.get_object_reference(cr, uid, 'account', 'invoice_tree')
+#         tree_id = tree_res and tree_res[1] or False
+#
+#         return {
+#             'name': _('Invoice'),
+#             'view_type': 'form',
+#             'view_mode': 'form,tree',
+#             'res_model': 'account.invoice',
+#             'res_id': invoice_ids,
+#             'view_id': False,
+#             'views': [(form_id, 'form'), (tree_id, 'tree')],
+#             'context': {'type': 'out_invoice'},
+#             'type': 'ir.actions.act_window',
+#         }
+#     def make_invoice(self, cr, uid, ids, context=None):
 #         case_obj = self.pool.get('tour.query')
-#         vendor_obj=self.pool.get('tour.hotel.vender')
-#         vendor_obje_line=self.pool.get('tour.hotel.vender.line')
+#         obj_sale_order_line = self.pool.get('sale.order.line')
+#         sale_obj= self.pool.get('sale.order')
+#         partner_obj = self.pool.get('res.partner')
 #         data = context and context.get('active_ids', []) or []
-#         list1=[]
-#         if hotel_ids:
-#             line_ids=vendor_obje_line.search(cr,uid,[('hotel_id','=',hotel_ids)])
-#             if line_ids:
-#                 for data in vendor_obje_line.browse(cr,uid,line_ids,context):
-#                     list1.append(data.vendor_id.id)
+#         for case in case_obj.browse(cr, uid, ids, context=context):
+#             partner = case.sale_id.partner_id
+# #             partner_addr = partner_obj.address_get(cr, uid, [partner.id],
+# #                         ['default', 'invoice', 'delivery', 'contact'])
+#             pricelist = partner.property_product_pricelist.id
+#             fpos = partner.property_account_position and partner.property_account_position.id or False
+#             payment_term = partner.property_payment_term and partner.property_payment_term.id or False
+#             new_ids = []
+#             #
+#             a = case.sale_id.partner_id.property_account_receivable.id
+#             if case.sale_id.partner_id and case.sale_id.partner_id.property_payment_term.id:
+#                 pay_term = case.sale_id.partner_id.property_payment_term.id
 #             else:
-#                 res['value'] = {'vender_ids': []}
-#             res['value'] = {'vender_ids': list1}
-#         return res        
-                    
-    def open_invoices(self, cr, uid, ids, invoice_ids, context=None):
-        """ open a view on one of the given invoice_ids """
-        ir_model_data = self.pool.get('ir.model.data')
-        form_res = ir_model_data.get_object_reference(cr, uid, 'account', 'invoice_form')
-        form_id = form_res and form_res[1] or False
-        tree_res = ir_model_data.get_object_reference(cr, uid, 'account', 'invoice_tree')
-        tree_id = tree_res and tree_res[1] or False
-
-        return {
-            'name': _('Invoice'),
-            'view_type': 'form',
-            'view_mode': 'form,tree',
-            'res_model': 'account.invoice',
-            'res_id': invoice_ids,
-            'view_id': False,
-            'views': [(form_id, 'form'), (tree_id, 'tree')],
-            'context': {'type': 'out_invoice'},
-            'type': 'ir.actions.act_window',
-        }
-    def make_invoice(self, cr, uid, ids, context=None):
-        case_obj = self.pool.get('tour.query')
-        obj_sale_order_line = self.pool.get('sale.order.line')
-        sale_obj= self.pool.get('sale.order')
-        partner_obj = self.pool.get('res.partner')
-        data = context and context.get('active_ids', []) or []
-        for case in case_obj.browse(cr, uid, ids, context=context):  
-            partner = case.sale_id.partner_id
-#             partner_addr = partner_obj.address_get(cr, uid, [partner.id],
-#                         ['default', 'invoice', 'delivery', 'contact'])
-            pricelist = partner.property_product_pricelist.id
-            fpos = partner.property_account_position and partner.property_account_position.id or False
-            payment_term = partner.property_payment_term and partner.property_payment_term.id or False
-            new_ids = []
-            #             
-            a = case.sale_id.partner_id.property_account_receivable.id
-            if case.sale_id.partner_id and case.sale_id.partner_id.property_payment_term.id:
-                pay_term = case.sale_id.partner_id.property_payment_term.id
-            else:
-               pay_term = False
-           
-           
-            lines=[]
-            inv_all=[]
-            states = ['confirmed', 'done', 'exception']
-            if not case.sale_id.invoice_ids:
-                for line in case.sale_id.order_line:
-                    if line.invoiced:
-                        continue
-                    elif (line.state in states):
-                        lines.append(line.id)
-                created_lines = obj_sale_order_line.invoice_line_create(cr, uid, lines)
-                print "==================ddddddddddddddd======================="
-                for line in created_lines:
-                    inv = {
-                        'name': case.sale_id.client_order_ref or '',
-                        'origin': case.sale_id.name,
-                        'type': 'out_invoice',
-                        'reference': "P%dSO%d" % (case.sale_id.partner_id.id, case.sale_id.id),
-                        'account_id': a,
-                        'partner_id': case.sale_id.partner_invoice_id.id,
-                        'invoice_line': [(6, 0, [line])],
-                        'currency_id' : case.sale_id.pricelist_id.currency_id.id,
-                        'comment': case.sale_id.note,
-                        'payment_term': pay_term,
-                        'fiscal_position': case.sale_id.fiscal_position.id or case.sale_id.partner_id.property_account_position.id,
-                        'user_id': case.sale_id.user_id and case.sale_id.user_id.id or False,
-                        'company_id': case.sale_id.company_id and case.sale_id.company_id.id or False,
-                        'hotel_id':case.sale_id.hotel_id,
-                        'vendor_id':case.sale_id.vendor_id,
-                        'date_invoice': fields.date.today(),
-                }
-                    inv_id = self.pool.get('account.invoice').create(cr, uid, inv)
-                    inv_all.append(inv_id)
-                if inv_all:
-                    sale_obj.write(cr,uid,[case.sale_id.id],{'invoice_ids':[(6, 0,inv_all)]})
-                    sale_obj.invalidate_cache(cr, uid, ['invoice_ids'], [case.sale_id.id], context=context)
-                    flag = True
-                    sale_obj.message_post(cr, uid, [case.sale_id.id], body=_("Invoice created"), context=context)
-                    data_sale = sale_obj.browse(cr, uid,case.sale_id.id, context=context)
-                    for line in case.sale_id.order_line:
-                        if not line.invoiced:
-                         flag = False
-                         break
-                        if flag:
-                         line.order_id.write({'state': 'progress'})
-                         workflow.trg_validate(uid, 'sale.order', case.sale_id.id, 'all_lines', cr)
-     
-#              if not invoices:
-# #                  raise osv.except_osv(_('Warning!'), _('Invoice cannot be created for this Sales Order Line due to one of the following reasons:\n1.The state of this sales order line is either "draft" or "cancel"!\n2.The Sales Order Line is Invoiced!'))
-#              if context.get('open_invoices', False):
-              #      return self.open_invoices(cr, uid, ids, inv_all, context=context)
-            return {'type': 'ir.actions.act_window_close'}
-    _defaults = {      
-  'tour_type':'domestic',
- 'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
-  }       
-   
-    def action_button_confirm(self, cr, uid, ids, context=None):
-        self.write(cr, uid, ids, {'state':'done'})
-        return True
-        
-    def action_button_(self, cr, uid, ids, context=None):
-        self.write(cr, uid, ids, {'state':'cancel'})
-        return True     
-    def create(self, cr, uid, vals, context=None):
-        if ('name' not in vals) or (vals.get('name') in ('/', False)):
-            if  vals.get('tour_type') == 'domestic':
-                vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
-            elif vals.get('tour_type') == 'international':
-                vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
-                
-        new_id = super(tour_query, self).create(cr, uid, vals, context=context)
-        context = context or {}
-                    
-        new_id = super(tour_query, self).create(cr, uid, vals, context=context)
-        line_obj=self.pool.get('tour.query.line')
-        tr_obj=self.pool.get('tour.ticket')
-        trac_obj=self.pool.get('tour.transport')
-        vals1={}
-        tr_vals2={}
-        trc_vals={}
-        
-        if context is None:
-            context = {}
-        if vals.get('days')>0:
-            for day in range (vals.get('days')+1):
-                name2='Day' +str((day+1))
-                if day==0:
-                    to_date=vals.get('to_date')
-                    next_date = datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1)
-                    #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
-                else :
-                    to_date = next_date
-                    next_date =(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1))
-                    
-                vals1.update({'name':name2,'query':new_id,'end_date':next_date,'to_date':to_date})
-            
-                tr_vals2.update({'query':new_id,'ticket_date':to_date})
-                trc_vals.update({'query':new_id,'from_date':to_date,'to_date':next_date})
-               
-                line_obj.create(cr,uid,vals1,context=context)
-                tr_obj.create(cr,uid,tr_vals2,context=context)
-                trac_obj.create(cr,uid,trc_vals,context=context)
-        return new_id
-    
-    def onchange_tour_type(self, cr, uid, ids, tour_type, context={}):  
-        res = {'value': {'name': ''}}  
-#         if tour_type:
-#             if tour_type == 'domestic':
-#                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
-#             elif tour_type == 'international':
-#                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
-        return res
-
-    def write(self, cr, uid, ids, vals, context=None):
-        if ids:
-            data=self.browse(cr,uid,ids[0],context=context)
-            if vals.get('tour_type') == 'domestic':
-                vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
-            elif vals.get('tour_type') == 'international':
-                vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
-                   
-            line_obj=self.pool.get('tour.query.line')
-            if vals.get('days') and not self.browse(cr,uid,ids[0],context=context).line_ids:
-                vals1={}
-                for day in range (vals.get('days')):
-                    name2='Day' +str((day+1))
-                    if day==0:
-                        to_date=data.to_date
-                        next_date = to_date
-                        #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
-                    else :
-                        to_date = (datetime.strptime(data.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
-                        next_date =to_date
-                    vals1.update({'name':name2,'query':ids[0],'end_date':next_date,'to_date':to_date})
-                    line_obj.create(cr,uid,vals1,context=context)
-        return super(tour_query, self).write(cr, uid, ids, vals, context=context)
-
+#                pay_term = False
+#
+#
+#             lines=[]
+#             inv_all=[]
+#             states = ['confirmed', 'done', 'exception']
+#             if not case.sale_id.invoice_ids:
+#                 for line in case.sale_id.order_line:
+#                     if line.invoiced:
+#                         continue
+#                     elif (line.state in states):
+#                         lines.append(line.id)
+#                 created_lines = obj_sale_order_line.invoice_line_create(cr, uid, lines)
+#                 print "==================ddddddddddddddd======================="
+#                 for line in created_lines:
+#                     inv = {
+#                         'name': case.sale_id.client_order_ref or '',
+#                         'origin': case.sale_id.name,
+#                         'type': 'out_invoice',
+#                         'reference': "P%dSO%d" % (case.sale_id.partner_id.id, case.sale_id.id),
+#                         'account_id': a,
+#                         'partner_id': case.sale_id.partner_invoice_id.id,
+#                         'invoice_line': [(6, 0, [line])],
+#                         'currency_id' : case.sale_id.pricelist_id.currency_id.id,
+#                         'comment': case.sale_id.note,
+#                         'payment_term': pay_term,
+#                         'fiscal_position': case.sale_id.fiscal_position.id or case.sale_id.partner_id.property_account_position.id,
+#                         'user_id': case.sale_id.user_id and case.sale_id.user_id.id or False,
+#                         'company_id': case.sale_id.company_id and case.sale_id.company_id.id or False,
+#                         'hotel_id':case.sale_id.hotel_id,
+#                         'vendor_id':case.sale_id.vendor_id,
+#                         'date_invoice': fields.date.today(),
+#                 }
+#                     inv_id = self.pool.get('account.invoice').create(cr, uid, inv)
+#                     inv_all.append(inv_id)
+#                 if inv_all:
+#                     sale_obj.write(cr,uid,[case.sale_id.id],{'invoice_ids':[(6, 0,inv_all)]})
+#                     sale_obj.invalidate_cache(cr, uid, ['invoice_ids'], [case.sale_id.id], context=context)
+#                     flag = True
+#                     sale_obj.message_post(cr, uid, [case.sale_id.id], body=_("Invoice created"), context=context)
+#                     data_sale = sale_obj.browse(cr, uid,case.sale_id.id, context=context)
+#                     for line in case.sale_id.order_line:
+#                         if not line.invoiced:
+#                          flag = False
+#                          break
+#                         if flag:
+#                          line.order_id.write({'state': 'progress'})
+#                          workflow.trg_validate(uid, 'sale.order', case.sale_id.id, 'all_lines', cr)
+#
+# #              if not invoices:
+# # #                  raise osv.except_osv(_('Warning!'), _('Invoice cannot be created for this Sales Order Line due to one of the following reasons:\n1.The state of this sales order line is either "draft" or "cancel"!\n2.The Sales Order Line is Invoiced!'))
+# #              if context.get('open_invoices', False):
+#               #      return self.open_invoices(cr, uid, ids, inv_all, context=context)
+#             return {'type': 'ir.actions.act_window_close'}
+#     _defaults = {
+#   'tour_type':'domestic',
+#  'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
+#   }
+#
+#     def action_button_confirm(self, cr, uid, ids, context=None):
+#         self.write(cr, uid, ids, {'state':'done'})
+#         return True
+#
+#     def action_button_(self, cr, uid, ids, context=None):
+#         self.write(cr, uid, ids, {'state':'cancel'})
+#         return True
+#     def create(self, cr, uid, vals, context=None):
+#         if ('name' not in vals) or (vals.get('name') in ('/', False)):
+#             if  vals.get('tour_type') == 'domestic':
+#                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
+#             elif vals.get('tour_type') == 'international':
+#                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
+#
+#         new_id = super(tour_query, self).create(cr, uid, vals, context=context)
+#         context = context or {}
+#
+#         new_id = super(tour_query, self).create(cr, uid, vals, context=context)
+#         line_obj=self.pool.get('tour.query.line')
+#         tr_obj=self.pool.get('tour.ticket')
+#         trac_obj=self.pool.get('tour.transport')
+#         vals1={}
+#         tr_vals2={}
+#         trc_vals={}
+#
+#         if context is None:
+#             context = {}
+#         if vals.get('days')>0:
+#             for day in range (vals.get('days')+1):
+#                 name2='Day' +str((day+1))
+#                 if day==0:
+#                     to_date=vals.get('to_date')
+#                     next_date = datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1)
+#                     #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
+#                 else :
+#                     to_date = next_date
+#                     next_date =(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1))
+#
+#                 vals1.update({'name':name2,'query':new_id,'end_date':next_date,'to_date':to_date})
+#
+#                 tr_vals2.update({'query':new_id,'ticket_date':to_date})
+#                 trc_vals.update({'query':new_id,'from_date':to_date,'to_date':next_date})
+#
+#                 line_obj.create(cr,uid,vals1,context=context)
+#                 tr_obj.create(cr,uid,tr_vals2,context=context)
+#                 trac_obj.create(cr,uid,trc_vals,context=context)
+#         return new_id
+#
+#     def onchange_tour_type(self, cr, uid, ids, tour_type, context={}):
+#         res = {'value': {'name': ''}}
+# #         if tour_type:
+# #             if tour_type == 'domestic':
+# #                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
+# #             elif tour_type == 'international':
+# #                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
+#         return res
+#
+#     def write(self, cr, uid, ids, vals, context=None):
+#         if ids:
+#             data=self.browse(cr,uid,ids[0],context=context)
+#             if vals.get('tour_type') == 'domestic':
+#                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
+#             elif vals.get('tour_type') == 'international':
+#                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
+#
+#             line_obj=self.pool.get('tour.query.line')
+#             if vals.get('days') and not self.browse(cr,uid,ids[0],context=context).line_ids:
+#                 vals1={}
+#                 for day in range (vals.get('days')):
+#                     name2='Day' +str((day+1))
+#                     if day==0:
+#                         to_date=data.to_date
+#                         next_date = to_date
+#                         #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
+#                     else :
+#                         to_date = (datetime.strptime(data.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
+#                         next_date =to_date
+#                     vals1.update({'name':name2,'query':ids[0],'end_date':next_date,'to_date':to_date})
+#                     line_obj.create(cr,uid,vals1,context=context)
+#         return super(tour_query, self).write(cr, uid, ids, vals, context=context)
+#
 class account_invoice(models.Model):
     _inherit ='account.invoice'
     ref_type= fields.Selection([ ('domes','Domestic bookings'), ('international','International booking,'), ('d_ticket','Domestic Ticketing'),
                                  ('domes','Excursion'), ('domes','Domestic bookings'),('e_excursion','Excursion'),('t_tra','Transport'),('passport','Passport'),('i_ticket','International Ticketing') ],'Type')
-    
-    hotel_id=fields.Many2one('tour.hotel', 'Hotel') 
-    vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor') 
+
+    hotel_id=fields.Many2one('tour.hotel', 'Hotel')
+    vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor')
 
     def write(self, cr, uid, ids, vals, context=None):
         res=super(account_invoice, self).write(cr, uid, ids, vals, context=context)
         if vals.get('internal_number'):
-            dt=self.browse(cr,uid,ids[0]) 
+            dt=self.browse(cr,uid,ids[0])
             if dt.ref_type:
                 new_name=vals.get('internal_number').split('/')
                 new_name[0]=dt.ref_type

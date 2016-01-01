@@ -9,7 +9,6 @@
                 <field name="partner_id" position="after">
                     <field name="tour_type"/>
                     <field name="emp_id"/>
-                    <field name="company_id"/>
                     <field name="days"/>
                     <field name="to_date"/>
                     <field name="adult_no"  class="oe_inline"/>
@@ -18,6 +17,103 @@
                     <field name="infants"/>
                     <field name="extra_no"  class="oe_inline"/>
                 </field>
+
+                <field name="priority" position="after">
+                    <field name="ticket"/>
+                    <field name="hotel"/>
+                    <field name="trnsport"/>
+                    <field name="extraction"/>
+                    <field name="visa_p"/>
+                    <field name="insuracne"/>
+                    <field name="passport"/>
+                </field>
+                <!--<xpath expr="//notebook" position="inside">-->
+                    <!--<page  string="Ticket Detail" attrs="{'invisible':[('ticket','=',False)]}">-->
+                        <!--<group>-->
+                        <!--<field name="tc_vendor_id"/>-->
+                        <!--<field name="ticket_emp_id"/>-->
+                        <!--</group>-->
+                        <!--<group>-->
+                            <!--<field name="ticket_ids" nolabel="1" options="{'reload_on_button': true}">-->
+                                <!--<tree editable="bottom">-->
+                                    <!--<field name="name" context="{'default_name' : name}" />-->
+                                    <!--<field name="mode_type"/>-->
+                                    <!--<field name="source"/>-->
+                                    <!--<field name="destination"/>-->
+                                    <!--<field name="ticket_date" />-->
+                                    <!--<field name="twoway" />-->
+                                    <!--<field name="ticket_return"/>-->
+                                    <!--<field name="client_felxi"/>-->
+                                    <!--<field name="client_days"/>-->
+                                    <!--<field name="ref_type"/>-->
+                                <!--</tree>-->
+                            <!--</field>-->
+                        <!--</group>-->
+                        <!--</page>-->
+
+                <!--<page string="Hotel detail" attrs="{'invisible':[('hotel','=',False)]}">-->
+                    <!--<button string="Send Query" name="%(action_tour_send)d" type="action" class="oe_highlight"/>-->
+                    <!--<field name="all_ids" widget="one2many_list">-->
+                        <!--<tree string="All Data" editable="bottom">-->
+                                <!--<field name="hotel_id" on_change="onchange_hotel_ids(hotel_id)"/>-->
+                                <!--<field name="check_in" on_change="onchange_checkin(check_in,hotel_id)"/>-->
+                                <!--<field name="check_out"/>-->
+                                <!--<field name="mean_id"/>-->
+                                <!--<field name="invoice_ids" widget="many2many_tags"  domain="[('hotel_id', '=', hotel_id)]" context="{'default_hotel_id': hotel_id}"/>-->
+                                <!--<field name="vender_ids" widget="many2many_tags" />-->
+                            <!--</tree>-->
+                        <!--</field>-->
+                <!--</page>-->
+                <!--<page  string="Transport Detail" attrs="{'invisible':[('trnsport','=',False)]}">-->
+                    <!--<group>-->
+                        <!--<field name="tr_vendor_id"/>-->
+                    <!--</group>-->
+
+                    <!--<field name="transport_ids" nolabel="1" options="{'reload_on_button': true}">-->
+                       <!--<tree string="Transport" editable="bottom">-->
+                            <!--<field name="name" context="{'default_name' : name}" />-->
+                            <!--<field name="from_date"/>-->
+                            <!--<field name="to_date"/>-->
+                            <!--<field  name="source_l"/>-->
+                            <!--<field  name="destination_l"/>-->
+
+                            <!--<field name="vehicle"/>-->
+                            <!--<field name="type_mode"/>-->
+                       <!--</tree>-->
+                    <!--</field>-->
+                <!--</page>-->
+                <!--<page  string="Excursion" attrs="{'invisible':[('extraction','=',False)]}">-->
+                    <!--<group>-->
+                        <!--<field name="ex_vendor_id"/>-->
+                    <!--</group>-->
+
+                    <!--<field name="line_ids" widget="one2many_list" >-->
+                        <!--<form string="Details s">-->
+                            <!--<group>-->
+                                <!--<field name="name"/>-->
+                                <!--<field name="city" domain="[('city','=',city)]"/>-->
+                                <!--<field name="to_date" string="From date"  on_change="onchange_date(to_date,end_date)"/>-->
+                                <!--<field name="price"/>-->
+                                <!--<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>-->
+                            <!--</group>-->
+                        <!--</form>-->
+                        <!--<tree string="Day Wise Detail" editable="bottom">-->
+                            <!--<field name="name"/>-->
+                            <!--<field name="city"/>-->
+                            <!--<field name="to_date"  on_change="onchange_date(to_date,end_date)"/>-->
+                            <!--<field name="price"/>-->
+                            <!--<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>-->
+                        <!--</tree>-->
+                    <!--</field>-->
+                <!--</page>-->
+
+                <!--<page string="Visa/Passport Detail" attrs="{'invisible':[('visa_p','=',False)]}">-->
+                    <!--<group>-->
+                        <!--<field name="visa_id" attrs="{'invisible':[('visa_p','=',False)]}" context="{'default_name' : name}" />-->
+                        <!--<field name="passport_id"  attrs="{'invisible':[('passport','=',False)]}" context="{'default_name' : name}" />-->
+                    <!--</group>-->
+                <!--</page>-->
+                <!--</xpath>-->
             </field>
         </record>
     </data>

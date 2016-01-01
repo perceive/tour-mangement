@@ -420,7 +420,7 @@
 <field name="part_id" invisible="1"/>
 </group>
 			<group>
-                   
+
           <notebook>
                         <page string="Preferred hotel list (PHS) ">
                             <field name="line_ids">
@@ -438,7 +438,7 @@
 </page>
 </notebook>
 
-		</group>       
+		</group>
          </form>
           </field>
       </record>
@@ -1116,267 +1116,267 @@
 </record>
 
 
-  <record id="Tour_tour_Information_form" model="ir.ui.view">
-        <field name="name">tour.query.form</field>
-        <field name="model">tour.query</field>
-        <field name="arch" type="xml">
-            <form string="Send Query" >
-            <header>
+  <!--<record id="Tour_tour_Information_form" model="ir.ui.view">-->
+        <!--<field name="name">tour.query.form</field>-->
+        <!--<field name="model">tour.query</field>-->
+        <!--<field name="arch" type="xml">-->
+            <!--<form string="Send Query" >-->
+            <!--<header>-->
 
- <button string="Convert to Quotation" name="%(action_tour_make_sale)d" type="action"  class="oe_highlight"/>
-<!--button name="make_invoice" string="Create &amp; View Invoice" type="object"
-                         class="oe_highlight"/ -->
- <button string="Send Query" name="%(action_tour_send)d" type="action" class="oe_highlight"/>	 
-                        <button name="action_button_cancel" string="Cancel Line" type="object" states="confirmed" groups="base.group_user"/>
-                        <button name="action_button_confirm" string="Done" type="object"    class="oe_highlight" groups="base.group_user"/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors='{"cancel":"red"}'/>
-          
-            </header>
-            <sheet string="Query">  
-               
-                 <div class="oe_title">
-                    <label for="name" readonly="1" string="Query "/>  
-                    <h1><field name="name"/></h1>
-                 </div> 
-                 
-         <group>
-					<group>
-						<field name="customer_id" />
-						<field name="tour_type" on_change="onchange_tour_type(tour_type)"/>
-						<field name="emp_id"/>
-						<field name="company_id"/>
-						<field name="days"/>
-						<field name="to_date"/>
-						<field name="adult_no"  class="oe_inline"/>
-						<field name="cwb_no"  class="oe_inline" />
-						<field name="cw_no"/>
-						<field name="infants"/>
-						<field name="extra_no"  class="oe_inline"/>
-					<field name="location_id" string="Destination" widget="many2many_tags" />
-					</group>
-					<group>
-						<field name="ticket"/>
-						<field name="hotel"/>
-						<field name="trnsport"/>
-						<field name="extraction"/>
-						<field name="visa_p"/>
-						<field name="insuracne"/>
-						<field name="passport"/>
-					</group>
-				</group>
-<notebook>
-<page  string="Ticket Detail" attrs="{'invisible':[('ticket','=',False)]}">
-<group>
-<field name="tc_vendor_id"/>  
-<field name="ticket_emp_id"/>
-</group> 
+ <!--<button string="Convert to Quotation" name="%(action_tour_make_sale)d" type="action"  class="oe_highlight"/>-->
+<!--&lt;!&ndash;button name="make_invoice" string="Create &amp; View Invoice" type="object"-->
+                         <!--class="oe_highlight"/ &ndash;&gt;-->
+ <!--<button string="Send Query" name="%(action_tour_send)d" type="action" class="oe_highlight"/>-->
+                        <!--<button name="action_button_cancel" string="Cancel Line" type="object" states="confirmed" groups="base.group_user"/>-->
+                        <!--<button name="action_button_confirm" string="Done" type="object"    class="oe_highlight" groups="base.group_user"/>-->
+                        <!--<field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" statusbar_colors='{"cancel":"red"}'/>-->
 
-  <group>
-                                    <field name="ticket_ids" nolabel="1" options="{'reload_on_button': true}">
-                                       <tree editable="bottom">
-<field name="name" context="{'default_name' : name}" />
-<field name="mode_type"/>
-<field name="source"/>
-<field name="destination"/>
-<field name="ticket_date" />
-<field name="twoway" />
-<field name="ticket_return"/>
-<field name="client_felxi"/>
-<field name="client_days"/>
-<field name="ref_type"/>
-                                        </tree>
-                                    </field>
-                                </group>
+            <!--</header>-->
+            <!--<sheet string="Query">-->
 
-</page>
+                 <!--<div class="oe_title">-->
+                    <!--<label for="name" readonly="1" string="Query "/>-->
+                    <!--<h1><field name="name"/></h1>-->
+                 <!--</div>-->
 
-	<page string="Hotel detail" attrs="{'invisible':[('hotel','=',False)]}">
-	<button string="Send Query" name="%(action_tour_send)d" type="action" class="oe_highlight"/>
-<group>
-</group>
- <field name="all_ids" widget="one2many_list">
-                                    <tree string="All Data" editable="bottom">	
-										<field name="hotel_id" on_change="onchange_hotel_ids(hotel_id)"/>
-										<field name="check_in" on_change="onchange_checkin(check_in,hotel_id)"/>	
-										<field name="check_out"/>
-										<field name="mean_id"/>
-	                                    <field name="invoice_ids" widget="many2many_tags"  domain="[('hotel_id', '=', hotel_id)]" context="{'default_hotel_id': hotel_id}"/>
-										<field name="vender_ids" widget="many2many_tags" />
-                                    </tree>
-                                </field>
-</page>
+         <!--<group>-->
+					<!--<group>-->
+						<!--<field name="customer_id" />-->
+						<!--<field name="tour_type" on_change="onchange_tour_type(tour_type)"/>-->
+						<!--<field name="emp_id"/>-->
+						<!--<field name="company_id"/>-->
+						<!--<field name="days"/>-->
+						<!--<field name="to_date"/>-->
+						<!--<field name="adult_no"  class="oe_inline"/>-->
+						<!--<field name="cwb_no"  class="oe_inline" />-->
+						<!--<field name="cw_no"/>-->
+						<!--<field name="infants"/>-->
+						<!--<field name="extra_no"  class="oe_inline"/>-->
+					<!--<field name="location_id" string="Destination" widget="many2many_tags" />-->
+					<!--</group>-->
+					<!--<group>-->
+						<!--<field name="ticket"/>-->
+						<!--<field name="hotel"/>-->
+						<!--<field name="trnsport"/>-->
+						<!--<field name="extraction"/>-->
+						<!--<field name="visa_p"/>-->
+						<!--<field name="insuracne"/>-->
+						<!--<field name="passport"/>-->
+					<!--</group>-->
+				<!--</group>-->
+<!--<notebook>-->
+<!--<page  string="Ticket Detail" attrs="{'invisible':[('ticket','=',False)]}">-->
+<!--<group>-->
+<!--<field name="tc_vendor_id"/>-->
+<!--<field name="ticket_emp_id"/>-->
+<!--</group>-->
 
+  <!--<group>-->
+                                    <!--<field name="ticket_ids" nolabel="1" options="{'reload_on_button': true}">-->
+                                       <!--<tree editable="bottom">-->
+<!--<field name="name" context="{'default_name' : name}" />-->
+<!--<field name="mode_type"/>-->
+<!--<field name="source"/>-->
+<!--<field name="destination"/>-->
+<!--<field name="ticket_date" />-->
+<!--<field name="twoway" />-->
+<!--<field name="ticket_return"/>-->
+<!--<field name="client_felxi"/>-->
+<!--<field name="client_days"/>-->
+<!--<field name="ref_type"/>-->
+                                        <!--</tree>-->
+                                    <!--</field>-->
+                                <!--</group>-->
 
+<!--</page>-->
 
-<page  string="Transport Detail" attrs="{'invisible':[('trnsport','=',False)]}">
-<group>
-<field name="tr_vendor_id"/>  
-</group> 
-
-                                    <field name="transport_ids" nolabel="1" options="{'reload_on_button': true}">
-                                       <tree string="Transport" editable="bottom">
-<field name="name" context="{'default_name' : name}" />
-<field name="from_date"/>
-<field name="to_date"/>
-<field  name="source_l"/>
-<field  name="destination_l"/>
-
-<field name="vehicle"/>  
-<field name="type_mode"/>
-
-                                       </tree>
-                                    </field>
-
-
-</page>
-<page  string="Excursion" attrs="{'invisible':[('extraction','=',False)]}">
-<group>
-<field name="ex_vendor_id"/>  
-</group> 
-          
-   <field name="line_ids" widget="one2many_list"  >
-                                <form string="Details s">
-                                    <group>
-<field name="name"/>
-<field name="city" domain="[('city','=',city)]"/>
-<field name="to_date" string="From date"  on_change="onchange_date(to_date,end_date)"/>
-<field name="price"/>
-<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>
-
-</group>
-                                       </form>
- <tree string="Day Wise Detail" editable="bottom">
-<field name="name"/>
-<field name="city"/>
-<field name="to_date"  on_change="onchange_date(to_date,end_date)"/>
-<field name="price"/>
-<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>
-
-                                </tree>
-
-</field>
-                     
-
-</page>
-<page  string="Visa/Passport Detail" attrs="{'invisible':[('visa_p','=',False)]}">
-<group>
-<field name="visa_id" attrs="{'invisible':[('visa_p','=',False)]}" context="{'default_name' : name}" />
-<field name="passport_id"  attrs="{'invisible':[('passport','=',False)]}" context="{'default_name' : name}" />
-</group>
-</page>
-
-</notebook>
-
-
-          </sheet> 
- <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
-                    <field name="message_ids" widget="mail_thread"/>
-                </div>
-                   
-            </form>
-        </field>
-    </record>
-
-    <record model="ir.ui.view" id="travel_hotel_transport_alquery_view">
-      <field name="name">Tour Query detail</field>
-      <field name="model">tour.query</field>
-      <field name="arch" type="xml">
-        <tree >
-                 <field name="customer_id" />
-<field name="location_id" />
-                    <field name="adult_no"  class="oe_inline"/>
-                    <field name="cwb_no"  class="oe_inline" />
-					<field name="cw_no"/>
-                    <field name="extra_no"  class="oe_inline"/>
-        </tree>
-      </field>
-    </record>
+	<!--<page string="Hotel detail" attrs="{'invisible':[('hotel','=',False)]}">-->
+	<!--<button string="Send Query" name="%(action_tour_send)d" type="action" class="oe_highlight"/>-->
+<!--<group>-->
+<!--</group>-->
+ <!--<field name="all_ids" widget="one2many_list">-->
+                                    <!--<tree string="All Data" editable="bottom">-->
+										<!--<field name="hotel_id" on_change="onchange_hotel_ids(hotel_id)"/>-->
+										<!--<field name="check_in" on_change="onchange_checkin(check_in,hotel_id)"/>-->
+										<!--<field name="check_out"/>-->
+										<!--<field name="mean_id"/>-->
+	                                    <!--<field name="invoice_ids" widget="many2many_tags"  domain="[('hotel_id', '=', hotel_id)]" context="{'default_hotel_id': hotel_id}"/>-->
+										<!--<field name="vender_ids" widget="many2many_tags" />-->
+                                    <!--</tree>-->
+                                <!--</field>-->
+<!--</page>-->
 
 
 
-		<record model="ir.ui.view" id="travel_hotel_transport_alquery_view">
-			<field name="name">Tour Query detail</field>
-			<field name="model">tour.query</field>
-			<field name="arch" type="xml">
-				<tree >
-					<field name="name" />
-					<field name="customer_id" />
-					<field name="location_id" />
-					<field name="to_date" />
-					<field name="adult_no"  class="oe_inline"/>
-					<field name="cwb_no"  class="oe_inline" />
-					<field name="cw_no"/>
-					<field name="extra_no"  class="oe_inline"/>
-				</tree>
-			</field>
-		</record>
+<!--<page  string="Transport Detail" attrs="{'invisible':[('trnsport','=',False)]}">-->
+<!--<group>-->
+<!--<field name="tr_vendor_id"/>-->
+<!--</group>-->
+
+                                    <!--<field name="transport_ids" nolabel="1" options="{'reload_on_button': true}">-->
+                                       <!--<tree string="Transport" editable="bottom">-->
+<!--<field name="name" context="{'default_name' : name}" />-->
+<!--<field name="from_date"/>-->
+<!--<field name="to_date"/>-->
+<!--<field  name="source_l"/>-->
+<!--<field  name="destination_l"/>-->
+
+<!--<field name="vehicle"/>-->
+<!--<field name="type_mode"/>-->
+
+                                       <!--</tree>-->
+                                    <!--</field>-->
 
 
-         <record id="tour_query_search" model="ir.ui.view">
-            <field name="name">tour.query.search</field>
-            <field name="model">tour.query</field>
-            <field name="arch" type="xml">
-                <search string="Tour Query">      
-                    <group expand="0" string="Group By Search">
-					 <!--search by name -->                    
-                        <field name="name"/>
-                        <field name="customer_id"/>
-                        <field name="location_id"/>
-                        <field name="to_date"/>
-					 <!--search by group -->                      
-						<filter string="Travel City" name="group_location_id" context="{'group_by':'location_id'}" />
-                    </group>
-					<!--search by filter -->
-                    <field name="tour_type"/>
-                    <filter name="tour_domestictour_extraction" string="Domestic Tour" domain="[('tour_type','=','domestic')]" />
-                    <filter name="tour_international" string="International Tour" domain="[('tour_type','=','international')]"/>
-                    <filter name="visa" string="Visa" domain="[('visa_p','=','True')]"/>
-                    <filter name="insuracne" string="Insurance" domain="[('insuracne','=','True')]"/>
-                    <filter name="passport" string="Passport" domain="[('passport','=','True')]"/>
-                    <filter name="ticket" string="Ticket" domain="[('ticket','=','True')]"/>
-                    <filter name="hotel" string="Hotel" domain="[('hotel','=','True')]"/>
-                    <filter name="transport" string="Transport" domain="[('trnsport','=','True')]"/>
-                    <filter name="extraction" string="Excursion" domain="[('extraction','=','True')]"/>
-                </search>      
-            </field>
-        </record>   
+<!--</page>-->
+<!--<page  string="Excursion" attrs="{'invisible':[('extraction','=',False)]}">-->
+<!--<group>-->
+<!--<field name="ex_vendor_id"/>-->
+<!--</group>-->
 
-        <record id="tour.query_kanban_view" model="ir.ui.view">
-            <field name="name">tour.query.kanban</field>
-            <field name="model">tour.query</field>
-            <field name="arch" type="xml">
-		        <kanban>
-		            <templates>
-		                <t t-name="kanban-box">
-							<div t-attf-class="oe_kanban_card oe_kanban_global_click">
-								<div class="oe_dropdown_toggle oe_dropdown_kanban">
-		                            <span class="oe_e">í</span>
-									<ul class="oe_dropdown_menu">
-		                                <t t-if="widget.view.is_action_enabled('edit')"><li><a type="edit">Edit...</a></li></t>
-		                                <t t-if="widget.view.is_action_enabled('delete')"><li><a type="delete">Delete</a></li></t>
-		                            </ul>
-		                     	</div>
-								<h4><a type="open"><field name="name"/></a></h4>
-							    <ul>
-							    	<li><span>Customer : </span><field name="customer_id"/></li>
-									<li><span>Tour Type : </span><field name="tour_type"/></li>
-									<li><span>Travel City : </span><field name="location_id"/></li>
-									<li><span>Start Date : </span><field name="to_date"/></li>
-							    </ul>
-							</div>
-		                </t>
-		            </templates>
-		        </kanban>
-            </field>
-        </record>
-    <record model="ir.actions.act_window" id="action_query_al_list">
-        <field name="name">Tour Query</field>
-        <field name="view_id" ref="travel_hotel_transport_alquery_view"/>
-        <field name="res_model">tour.query</field>
-        <field name="view_mode">kanban,tree,form</field>
+   <!--<field name="line_ids" widget="one2many_list"  >-->
+                                <!--<form string="Details s">-->
+                                    <!--<group>-->
+<!--<field name="name"/>-->
+<!--<field name="city" domain="[('city','=',city)]"/>-->
+<!--<field name="to_date" string="From date"  on_change="onchange_date(to_date,end_date)"/>-->
+<!--<field name="price"/>-->
+<!--<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>-->
 
-</record>
+<!--</group>-->
+                                       <!--</form>-->
+ <!--<tree string="Day Wise Detail" editable="bottom">-->
+<!--<field name="name"/>-->
+<!--<field name="city"/>-->
+<!--<field name="to_date"  on_change="onchange_date(to_date,end_date)"/>-->
+<!--<field name="price"/>-->
+<!--<field name="extr_id"  widget="many2many_tags"  string ="Excursion"  domain="[('city','=',city)]"/>-->
+
+                                <!--</tree>-->
+
+<!--</field>-->
+
+
+<!--</page>-->
+<!--<page  string="Visa/Passport Detail" attrs="{'invisible':[('visa_p','=',False)]}">-->
+<!--<group>-->
+<!--<field name="visa_id" attrs="{'invisible':[('visa_p','=',False)]}" context="{'default_name' : name}" />-->
+<!--<field name="passport_id"  attrs="{'invisible':[('passport','=',False)]}" context="{'default_name' : name}" />-->
+<!--</group>-->
+<!--</page>-->
+
+<!--</notebook>-->
+
+
+          <!--</sheet>-->
+ <!--<div class="oe_chatter">-->
+                    <!--<field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>-->
+                    <!--<field name="message_ids" widget="mail_thread"/>-->
+                <!--</div>-->
+
+            <!--</form>-->
+        <!--</field>-->
+    <!--</record>-->
+
+    <!--<record model="ir.ui.view" id="travel_hotel_transport_alquery_view">-->
+      <!--<field name="name">Tour Query detail</field>-->
+      <!--<field name="model">tour.query</field>-->
+      <!--<field name="arch" type="xml">-->
+        <!--<tree >-->
+                 <!--<field name="customer_id" />-->
+<!--<field name="location_id" />-->
+                    <!--<field name="adult_no"  class="oe_inline"/>-->
+                    <!--<field name="cwb_no"  class="oe_inline" />-->
+					<!--<field name="cw_no"/>-->
+                    <!--<field name="extra_no"  class="oe_inline"/>-->
+        <!--</tree>-->
+      <!--</field>-->
+    <!--</record>-->
+
+
+
+		<!--<record model="ir.ui.view" id="travel_hotel_transport_alquery_view">-->
+			<!--<field name="name">Tour Query detail</field>-->
+			<!--<field name="model">tour.query</field>-->
+			<!--<field name="arch" type="xml">-->
+				<!--<tree >-->
+					<!--<field name="name" />-->
+					<!--<field name="customer_id" />-->
+					<!--<field name="location_id" />-->
+					<!--<field name="to_date" />-->
+					<!--<field name="adult_no"  class="oe_inline"/>-->
+					<!--<field name="cwb_no"  class="oe_inline" />-->
+					<!--<field name="cw_no"/>-->
+					<!--<field name="extra_no"  class="oe_inline"/>-->
+				<!--</tree>-->
+			<!--</field>-->
+		<!--</record>-->
+
+
+         <!--<record id="tour_query_search" model="ir.ui.view">-->
+            <!--<field name="name">tour.query.search</field>-->
+            <!--<field name="model">tour.query</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<search string="Tour Query">-->
+                    <!--<group expand="0" string="Group By Search">-->
+					 <!--&lt;!&ndash;search by name &ndash;&gt;-->
+                        <!--<field name="name"/>-->
+                        <!--<field name="customer_id"/>-->
+                        <!--<field name="location_id"/>-->
+                        <!--<field name="to_date"/>-->
+					 <!--&lt;!&ndash;search by group &ndash;&gt;-->
+						<!--<filter string="Travel City" name="group_location_id" context="{'group_by':'location_id'}" />-->
+                    <!--</group>-->
+					<!--&lt;!&ndash;search by filter &ndash;&gt;-->
+                    <!--<field name="tour_type"/>-->
+                    <!--<filter name="tour_domestictour_extraction" string="Domestic Tour" domain="[('tour_type','=','domestic')]" />-->
+                    <!--<filter name="tour_international" string="International Tour" domain="[('tour_type','=','international')]"/>-->
+                    <!--<filter name="visa" string="Visa" domain="[('visa_p','=','True')]"/>-->
+                    <!--<filter name="insuracne" string="Insurance" domain="[('insuracne','=','True')]"/>-->
+                    <!--<filter name="passport" string="Passport" domain="[('passport','=','True')]"/>-->
+                    <!--<filter name="ticket" string="Ticket" domain="[('ticket','=','True')]"/>-->
+                    <!--<filter name="hotel" string="Hotel" domain="[('hotel','=','True')]"/>-->
+                    <!--<filter name="transport" string="Transport" domain="[('trnsport','=','True')]"/>-->
+                    <!--<filter name="extraction" string="Excursion" domain="[('extraction','=','True')]"/>-->
+                <!--</search>-->
+            <!--</field>-->
+        <!--</record>-->
+
+        <!--<record id="tour.query_kanban_view" model="ir.ui.view">-->
+            <!--<field name="name">tour.query.kanban</field>-->
+            <!--<field name="model">tour.query</field>-->
+            <!--<field name="arch" type="xml">-->
+		        <!--<kanban>-->
+		            <!--<templates>-->
+		                <!--<t t-name="kanban-box">-->
+							<!--<div t-attf-class="oe_kanban_card oe_kanban_global_click">-->
+								<!--<div class="oe_dropdown_toggle oe_dropdown_kanban">-->
+		                            <!--<span class="oe_e">í</span>-->
+									<!--<ul class="oe_dropdown_menu">-->
+		                                <!--<t t-if="widget.view.is_action_enabled('edit')"><li><a type="edit">Edit...</a></li></t>-->
+		                                <!--<t t-if="widget.view.is_action_enabled('delete')"><li><a type="delete">Delete</a></li></t>-->
+		                            <!--</ul>-->
+		                     	<!--</div>-->
+								<!--<h4><a type="open"><field name="name"/></a></h4>-->
+							    <!--<ul>-->
+							    	<!--<li><span>Customer : </span><field name="customer_id"/></li>-->
+									<!--<li><span>Tour Type : </span><field name="tour_type"/></li>-->
+									<!--<li><span>Travel City : </span><field name="location_id"/></li>-->
+									<!--<li><span>Start Date : </span><field name="to_date"/></li>-->
+							    <!--</ul>-->
+							<!--</div>-->
+		                <!--</t>-->
+		            <!--</templates>-->
+		        <!--</kanban>-->
+            <!--</field>-->
+        <!--</record>-->
+    <!--<record model="ir.actions.act_window" id="action_query_al_list">-->
+        <!--<field name="name">Tour Query</field>-->
+        <!--<field name="view_id" ref="travel_hotel_transport_alquery_view"/>-->
+        <!--<field name="res_model">tour.query</field>-->
+        <!--<field name="view_mode">kanban,tree,form</field>-->
+
+<!--</record>-->
 
     <record model="ir.ui.view" id="sale_tour_sale_order">
         <field name="name">sale.order.tour.view.form</field>
@@ -1461,7 +1461,7 @@
 
  <menuitem action="action_transport_list" parent="menu_familu"  id="tour_transport_menu"   sequence="3"/>
 
- <menuitem action="action_query_al_list" parent="menu_tour_config_purchase_1"  id="tour_query_menu" />
+ <!--<menuitem action="action_query_al_list" parent="menu_tour_config_purchase_1"  id="tour_query_menu" />-->
 
    <menuitem id="menu_tour_configuration" name="Configuration" parent="menu_familu" sequence="15" />
 
