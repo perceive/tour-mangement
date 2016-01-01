@@ -1,0 +1,113 @@
+<openerp>
+   <data>
+
+        <!-- crm make sale's view -->
+
+       <record id="view_tour_make_sale" model="ir.ui.view">
+          <field name="name">tour.make.sale.form</field>
+          <field name="model">tour.make.sale</field>
+          <field name="arch" type="xml">
+            <form string="Convert to Quotation" >
+ <group cols="4">
+                    <field name="partner_id" required="1"/>
+          <field name="tr_amount"/>
+    <field name="hr_amount"/>
+    <field name="trc_amount"/>
+    <field name="is_amount"/>
+    <field name="ex_amount"/>
+    <field name="pas_amount"/>
+	<field name="v_amount"/>
+
+<field name="margin_amount"/>
+<field name="absolute"  on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
+<field name="percentage" on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
+
+</group>
+                    <button name="makeOrder_sale" string="Create" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="oe_link" special="cancel" />
+
+            </form>
+          </field>
+       </record>
+
+       <!-- crm make sale's  action -->
+
+       <record id="action_tour_make_sale" model="ir.actions.act_window">
+          <field name="name">Create Sale</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">tour.make.sale</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+ 		<field name="view_id" ref="view_tour_make_sale"/>
+       </record>
+
+<!-- Send Query -->
+
+       <record id="view_tour_query_sale" model="ir.ui.view">
+          <field name="name">tour.send.query.form</field>
+          <field name="model">tour.send.query</field>
+          <field name="arch" type="xml">
+            <form string="Send to Query" >
+ 			<label string="Are you sure you want to send query	?"/>
+                <footer>
+                    <button name="makeOrder" string="_Send Query" type="object" class="oe_highlight"/>
+                    or
+                    <button string="Cancel" class="oe_link" special="cancel" />
+                </footer>
+            </form>
+          </field>
+       </record>
+
+       <!-- crm make sale's  action -->
+
+       <record id="action_tour_send" model="ir.actions.act_window">
+          <field name="name">Send Query</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">tour.send.query</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+       </record>
+
+
+
+<!-- --> 
+
+
+
+        <!-- crm make sale's view -->
+
+       <record id="view_tour_sale" model="ir.ui.view">
+          <field name="name">tour.query.hotel.form</field>
+          <field name="model">tour.query.hotel</field>
+          <field name="arch" type="xml">
+            <form string="Get Hotel Detail" >
+ <group cols="4">
+                    <field name="hotel_ids"  on_change="onchange_hotel_ids(hotel_ids)" required="1"/>
+          <field name="vender_ids"/>
+
+<field name="invoice"/>
+
+</group>
+                    <button name="get_order" string="Get the Order Detail" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="oe_link" special="cancel" />
+
+            </form>
+          </field>
+       </record>
+
+       <!-- crm make sale's  action -->
+
+       <record id="action_tour_sale" model="ir.actions.act_window">
+          <field name="name">Get Order Detail</field>
+          <field name="type">ir.actions.act_window</field>
+          <field name="res_model">tour.query.hotel</field>
+          <field name="view_type">form</field>
+          <field name="view_mode">form</field>
+          <field name="target">new</field>
+ 		<field name="view_id" ref="view_tour_sale"/>
+       </record>
+
+  </data>
+</openerp>

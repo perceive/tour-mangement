@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- QWeb Reports -->
+
+        <report 
+            id="report_tour_query"
+            model="tour.query"
+            string="Tour Query"
+            report_type="qweb-pdf"
+            name="tour.report_tourquery"
+            file="tour.report_tourquery"
+        />
+
+    </data>
+</openerp>

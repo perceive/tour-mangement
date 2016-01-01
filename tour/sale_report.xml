@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report 
+            id="report_sale_order_custom"
+            string=" Tour Quotation / Order custom"
+            model="sale.order" 
+            report_type="qweb-pdf"
+            file="tour.report_saleorder_custom" 
+            name="tour.report_saleorder_custom" 
+        />
+    </data>
+</openerp>

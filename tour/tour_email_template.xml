@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+  <record id="email_template_tour_hotel_inv_mail" model="email.template">
+            <field name="name"> Send by Email</field>
+            <field name="model_id" ref="model_tour_query" />
+   			<field name="subject">Hotel.Booking </field>
+ 		      <field name="email_from">${(object.company_id.email or '')|safe}</field>
+            <field name="email_to">${(object.emp_id.work_email)|safe}</field>
+            <field name="auto_delete" eval="True" />
+               <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.hotel.name},</p>
+    
+    <p>Detail Booking </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       &nbsp;&nbsp;From Date: ${object.dob_range}<br />
+	 &nbsp;&nbsp;To Date: ${object.dob_range}<br />
+       &nbsp;&nbsp;Room Category  <strong>${object.room_id.name}</strong><br />
+       &nbsp;&nbsp;Buy Price: <strong>${object.rate} </strong><br />
+       &nbsp;&nbsp;Number of Room: ${object.r_price}<br />
+
+    </p>
+ 
+    <br/>
+    <p>If you have any question, do not hesitate to contact us.</p>
+    
+    
+</div>
+            ]]>
+            </field>
+        </record>
+
+	  <record id="action_email_inv_hotel" model="ir.actions.server">
+            <field name="name">Reminder to User</field>
+            <field name="model_id" ref="model_tour_hotel_inv"/>
+            <field name="condition">True</field>
+            <field name="type">ir.actions.server</field>
+            <field name="state">email</field>
+            <field name="template_id" ref="email_template_tour_hotel_inv_mail"/>
+        </record>
+        <record id="rule_inv-reminder_lead" model="base.action.rule">
+            <field name="name">Set Remider Hotel booking before 8 days.</field>
+            <field name="model_id" ref="model_tour_hotel_inv"/>
+            <field name="sequence">1</field>
+            <field name="kind">on_time</field>
+            <field name="trg_date_id" ref="field_tour_hotel_inv_dob_range"/>
+            <field name="trg_date_range">-8</field>
+            <field name="trg_date_range_type">day</field>
+            <field name="server_action_ids" eval="[(6,0,[ref('action_email_inv_hotel')])]"/>
+        </record>
+
+      
+
+
+
+        <record id="email_template_tour_all" model="email.template">
+            <field name="name"> Send by Email</field>
+            <field name="model_id" ref="model_tour_query" />
+   			<field name="subject">Query for ${(object.tc_vendor_id.name)|safe}  </field>
+ 		      <field name="email_from">${(object.company_id.email or '')|safe}</field>
+            <field name="email_to">${(object.tc_vendor_id.email)|safe}</field>
+            <field name="auto_delete" eval="True" />
+               <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.hotel.name},</p>
+    
+    <p>Here is your detail of Query </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+       &nbsp;&nbsp;Number of Child with bed CWB: <strong>${object.cwb_no} </strong><br />
+       &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+       &nbsp;&nbsp;Number of infants: ${object.infants}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+
+
+    </p>
+
+<table width="100%" border="1">
+            <tr>
+                <th colspan="7">Detail of Ticket</th>
+            </tr>
+            <tr>
+                <th>Ticket Name</th>
+				<th>Mode</th>
+				<th>Date of Travel</th>
+                <th>Flexible</th>
+                <th>Class Of Travel</th>
+                <th>Source</th>
+				<th>Destination</th>
+            </tr>
+% for goal in object.ticket_ids:
+                <tr>
+           		<td>${goal['name']}</td>
+				<td>${goal['mode_type']}</td>
+                    <td>${goal['ticket_date']}</td>
+					<td>${goal['client_days']}</td>
+                    <td>${goal['ref_type'] or ''}</td>
+                    <td>${goal['source'].display_name or ''}</td>
+                    <td>${goal['destination'].display_name or ''}</td>
+                    </td>
+                </tr>
+            % endfor
+</table>
+
+ <table width="100%" border="1">
+            <tr>
+                <th colspan="4">Detail of Hotel</th>
+            </tr>
+            <tr>
+                <th>Hotel Name</th>
+				<th>Check In</th>
+				<th>Check Out</th>
+                <th>Meal</th>
+                <th>Direct</th>
+                <th>Vendor</th>
+                <th>Invoice</th>
+                <th>Vendor Detail</th>
+            </tr>
+% for goal in object.all_ids:
+                <tr>
+           		<td>${goal['hotel_id'].name}</td>
+				<td>${goal['check_in']}</td>
+                    <td>${goal['check_out']}</td>
+					<td>${goal['mean_id'].name}</td>
+					<td>${goal['diret_hotel']}</td>
+					<td>${goal['vendor']}</td>
+					<td>${goal['invoice_ids'].name or ''}</td>
+					<td>${goal['vender_ids'].name}</td>
+                    </td>
+                </tr>
+            % endfor
+</table>
+    <br/>
+
+        <table width="100%" border="1">
+            <tr>
+                <th colspan="4">Detail of Transport</th>
+            </tr>
+            <tr>
+                <th>From Date</th>
+				<th>To Date</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Vehicle</th>
+                <th>Mode of transport</th>
+
+            </tr>
+% for goal in object.transport_ids:
+                <tr>
+          
+                    <td>${goal['from_date']}</td>
+					<td>${goal['to_date']}</td>
+                    <td>${goal['source_l'].city or ''}</td>
+                    <td>${goal['destination_l'].city or ''}</td>
+                    <td>${goal['vehicle'] or ''}</td>
+                    <td>${goal['type_mode'] or ''}</td>
+                    </td>
+                </tr>
+            % endfor
+</table>
+      
+.</p>
+
+<table width="100%" border="1">
+            <tr>
+                <th colspan="2">Detail of Site seen</th>
+            </tr>
+            <tr>
+                <th>Site Seen Name</th>
+                <th>City</th>
+
+            </tr>
+% for goal in object.extraction_id:
+                <tr>
+          
+                    <td>${goal['name']}</td>
+                    <td>${goal['city'].display_name or ''}</td>
+
+                    </td>
+                </tr>
+            % endfor
+</table>
+
+    <p>If you have any question, do not hesitate to contact us.</p>
+    
+    
+</div>
+            ]]>
+            </field>
+        </record>
+
+<!-- Group - -->
+        <record id="email_template_tour" model="email.template">
+            <field name="name"> Send by Email</field>
+            <field name="model_id" ref="model_tour_query" />
+   			<field name="subject">Query for Hotel</field>
+ 		      <field name="email_from">${(object.company_id.email or '')|safe}</field>
+            <field name="email_to">${(object.emp_id.work_email)|safe}</field>
+            <field name="auto_delete" eval="True" />
+               <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.hotel.name},</p>
+    
+    <p>Here is your detail of Query </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+       &nbsp;&nbsp;Number of Child with bed CWB: <strong>${object.cwb_no} </strong><br />
+       &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+       &nbsp;&nbsp;Number of infants: ${object.infants}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+
+
+    </p>
+ <table width="100%" border="1">
+            <tr>
+                <th colspan="4">Detail of Hotel</th>
+            </tr>
+            <tr>
+                <th>Hotel Name</th>
+				<th>Check In</th>
+				<th>Check Out</th>
+                <th>Meal</th>
+                <th>Direct</th>
+                <th>Vendor</th>
+                <th>Invoice</th>
+                <th>Vendor Detail</th>
+            </tr>
+% for goal in object.all_ids:
+                <tr>
+           		<td>${goal['hotel_id'].name}</td>
+				<td>${goal['check_in']}</td>
+                    <td>${goal['check_out']}</td>
+					<td>${goal['mean_id'].name}</td>
+					<td>${goal['diret_hotel']}</td>
+					<td>${goal['vendor']}</td>
+					<td>${goal['invoice_ids'].name or ''}</td>
+					<td>${goal['vender_ids'].name}</td>
+                    </td>
+                </tr>
+            % endfor
+</table>
+    <br/>
+    <p>If you have any question, do not hesitate to contact us.</p>
+    
+    
+</div>
+            ]]>
+            </field>
+        </record>
+
+   <record id="email_template_hotel" model="email.template">
+            <field name="name">Query for Hotel</field>
+             <field name="email_from">${object.company_id.email}</field>
+            <field name="subject">Query for Hotel  ${object.name}</field>
+            <field name="email_to">${(object.email or '')|safe}</field>
+            <field name="model_id" ref="model_tour_hotel" />
+            <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.name or ''},</p>
+    
+    <p>Here is your detail of Query </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+       &nbsp;&nbsp;Number of Child with bed CWB: <strong>${object.cwb_no} </strong><br />
+       &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+       &nbsp;&nbsp;Number of infants: ${object.infants}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+
+    </p>
+
+    <br/>
+<p>If you have any question, do not hesitate to contact us.</p>
+   <div>
+        <span style="color: #222; margin-bottom: 5px; display: block; ">
+        % if object.company_id.street:
+            ${object.company_id.street}<br/>
+        % endif
+        % if object.company_id.street2:
+            ${object.company_id.street2}<br/>
+        % endif
+        % if object.company_id.city or object.company_id.zip:
+            ${object.company_id.zip} ${object.company_id.city}<br/>
+        % endif
+        % if object.company_id.country_id:
+            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>
+        % endif
+        </span>
+        % if object.company_id.phone:
+            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                Phone:&nbsp; ${object.company_id.phone}
+            </div>
+        % endif
+        % if object.company_id.website:
+            <div>
+                Web :&nbsp;<a href="${object.company_id.website}">${object.company_id.website}</a>
+            </div>
+        %endif
+        <p></p>
+    </div>
+ 
+    
+</div>
+            ]]>
+            </field>
+        </record>
+
+   <record id="email_template_ticket" model="email.template">
+            <field name="name">Query for Ticket</field>
+            <field name="email_from">${(object.company_id.email or '')|safe}</field>
+            <field name="subject">Query for Ticket  ${object.tc_vendor_id.name or object.emp_id.name or ''}</field>
+            <field name="email_to">${(object.tc_vendor_id and object.tc_vendor_id.email or object.emp_id.work_email or '')|safe}</field>
+            <field name="model_id" ref="model_tour_query" />
+             <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.tc_vendor_id.name or ''},</p>
+    
+    <p>Here is your detail of Query </p>
+
+<p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+        &nbsp;&nbsp;Tour type: <strong>${object.tour_type}</strong><br />
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+       &nbsp;&nbsp;Number of Child with bed CWB: <strong>${object.cw_no} </strong><br />
+       &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+ &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+
+    </p>    
+
+ 
+    <p>
+
+<br />
+        <table width="100%" border="1">
+            <tr>
+                <th colspan="7">Detail of Ticket</th>
+            </tr>
+            <tr>
+                <th>Ticket Name</th>
+				<th>Mode</th>
+				<th>Date of Travel</th>
+                <th>Flexible</th>
+                <th>Class Of Travel</th>
+                <th>Source</th>
+				<th>Destination</th>
+            </tr>
+% for goal in object.ticket_ids:
+                <tr>
+           		<td>${goal['name']}</td>
+				<td>${goal['mode_type']}</td>
+                    <td>${goal['ticket_date']}</td>
+					<td>${goal['client_days']}</td>
+                    <td>${goal['ref_type'] or ''}</td>
+                    <td>${goal['source'].display_name or ''}</td>
+                    <td>${goal['destination'].display_name or ''}</td>
+                    </td>
+                </tr>
+            % endfor
+</table>      
+.</p>
+
+
+    <br/>
+<p>If you have any question, do not hesitate to contact us.</p>
+   <div>
+        <span style="color: #222; margin-bottom: 5px; display: block; ">
+        % if object.company_id.street:
+            ${object.company_id.street}<br/>
+        % endif
+        % if object.company_id.street2:
+            ${object.company_id.street2}<br/>
+        % endif
+        % if object.company_id.city or object.company_id.zip:
+            ${object.company_id.zip} ${object.company_id.city}<br/>
+        % endif
+        % if object.company_id.country_id:
+            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>
+        % endif
+        </span>
+        % if object.company_id.phone:
+            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                Phone:&nbsp; ${object.company_id.phone}
+            </div>
+        % endif
+        % if object.company_id.website:
+            <div>
+                Web :&nbsp;<a href="${object.company_id.website}">${object.company_id.website}</a>
+            </div>
+        %endif
+        <p></p>
+    </div>
+ 
+
+</div>
+            ]]>
+
+
+            </field>
+        </record>
+
+   <record id="email_template_trasnport" model="email.template">
+            <field name="name">Query for Transport</field>
+               <field name="email_from">${(object.company_id.email or '')|safe}</field>
+            <field name="subject">Query for Transport  ${object.tr_vendor_id.name or object.emp_id.name or ''}</field>
+
+     	<field name="email_to">${(object.tr_vendor_id and object.tr_vendor_id.email or object.emp_id.work_email or '')|safe}</field>
+            <field name="model_id" ref="model_tour_query" />
+             <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.tr_vendor_id.name or ''},</p>
+    
+    <p>Here is your detail of Query </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+       &nbsp;&nbsp;Number of Child with bed CWB: <strong>${object.cwb_no} </strong><br />
+       &nbsp;&nbsp;Number of Child without Bed CNB: ${object.cw_no}<br />
+       &nbsp;&nbsp;Number of infants: ${object.infants}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+ 
+
+    </p>
+    <br/>
+
+    
+    <p>
+
+        <table width="100%" border="1">
+            <tr>
+                <th colspan="4">Detail of Transport</th>
+            </tr>
+            <tr>
+                <th>From Date</th>
+				<th>To Date</th>
+                <th>Source</th>
+                <th>Destination</th>
+                <th>Vehicle</th>
+                <th>Mode of transport</th>
+
+            </tr>
+% for goal in object.transport_ids:
+                <tr>
+          
+                    <td>${goal['from_date']}</td>
+					<td>${goal['to_date']}</td>
+                    <td>${goal['source_l'].city or ''}</td>
+                    <td>${goal['destination_l'].city or ''}</td>
+                    <td>${goal['vehicle'] or ''}</td>
+                    <td>${goal['type_mode'] or ''}</td>
+                    </td>
+                </tr>
+            % endfor
+      
+.</p>
+    <br/>
+    <p>If you have any question, do not hesitate to contact us.</p>
+   <div>
+        <span style="color: #222; margin-bottom: 5px; display: block; ">
+        % if object.company_id.street:
+            ${object.company_id.street}<br/>
+        % endif
+        % if object.company_id.street2:
+            ${object.company_id.street2}<br/>
+        % endif
+        % if object.company_id.city or object.company_id.zip:
+            ${object.company_id.zip} ${object.company_id.city}<br/>
+        % endif
+        % if object.company_id.country_id:
+            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>
+        % endif
+        </span>
+        % if object.company_id.phone:
+            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                Phone:&nbsp; ${object.company_id.phone}
+            </div>
+        % endif
+        % if object.company_id.website:
+            <div>
+                Web :&nbsp;<a href="${object.company_id.website}">${object.company_id.website}</a>
+            </div>
+        %endif
+        <p></p>
+    </div>
+ 
+
+    
+</div>
+            ]]>
+            </field>
+        </record>
+
+
+
+   <record id="email_template_excursion" model="email.template">
+            <field name="name">Query for Excursion</field>
+           <field name="email_from">${object.company_id.email}</field>
+            <field name="subject">Query for Excursion  ${object.ex_vendor_id.name or object.emp_id.name or ''}</field>
+            <field name="email_to">${(object.ex_vendor_id and object.ex_vendor_id.email or object.emp_id.work_email or'')|safe}</field>
+            <field name="model_id" ref="model_tour_query" />
+             <field name="body_html"><![CDATA[
+<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: #FFF; ">
+
+    <p>Hello ${object.ex_vendor_id.name or ''},</p>
+    
+    <p>Here is your detail of Query </p>
+
+    <p style="border-left: 1px solid #8e0000; margin-left: 30px;">
+       
+       &nbsp;&nbsp;Number of Adult: <strong>${object.adult_no}</strong><br />
+	   &nbsp;&nbsp;Number of infants: ${object.infants}<br />
+ &nbsp;&nbsp;Extra Adult: ${object.extra_no}<br />
+ &nbsp;&nbsp;Tour Type: ${object.tour_type}<br />
+
+    </p>
+
+    <br/>
+
+   <table width="100%" border="1">
+            <tr>
+                <th colspan="2">Detail of Site seen</th>
+            </tr>
+            <tr>
+                <th>Site Seen Name</th>
+                <th>City</th>
+
+            </tr>
+% for goal in object.extraction_id:
+                <tr>
+          
+                    <td>${goal['name']}</td>
+                    <td>${goal['city'].display_name or ''}</td>
+
+                    </td>
+                </tr>
+            % endfor
+      
+.</p>
+    <br/>
+</table>
+    <p>If you have any question, do not hesitate to contact us.</p>
+   <div>
+        <span style="color: #222; margin-bottom: 5px; display: block; ">
+        % if object.company_id.street:
+            ${object.company_id.street}<br/>
+        % endif
+        % if object.company_id.street2:
+            ${object.company_id.street2}<br/>
+        % endif
+        % if object.company_id.city or object.company_id.zip:
+            ${object.company_id.zip} ${object.company_id.city}<br/>
+        % endif
+        % if object.company_id.country_id:
+            ${object.company_id.state_id and ('%s, ' % object.company_id.state_id.name) or ''} ${object.company_id.country_id.name or ''}<br/>
+        % endif
+        </span>
+        % if object.company_id.phone:
+            <div style="margin-top: 0px; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 0px; ">
+                Phone:&nbsp; ${object.company_id.phone}
+            </div>
+        % endif
+        % if object.company_id.website:
+            <div>
+                Web :&nbsp;<a href="${object.company_id.website}">${object.company_id.website}</a>
+            </div>
+        %endif
+        <p></p>
+    </div>
+ 
+
+    
+</div>
+            ]]>
+            </field>
+        </record>
+</data>
+ 
+
+
+</openerp>
