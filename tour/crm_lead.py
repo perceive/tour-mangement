@@ -9,7 +9,7 @@ class crm_lead(models.Model):
 #     ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor')
 #     tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Ticket Vendor')
 #     tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor')
-#     location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True)
+    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True)
     adult_no = fields.Integer('Number of Adult')
     cwb_no = fields.Integer('CWB')
     cw_no = fields.Integer('CNB')
