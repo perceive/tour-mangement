@@ -11,7 +11,7 @@
 
     """,
     'summary': 'Tour',
-    'author': 'Bhumika Shrimali ',
+    'author': ' ',
     'website': '',
     'depends': ['mail',
         'base_location','crm','hr','account','sale'],
@@ -22,7 +22,7 @@
              'report_saleorder_custom.xml',
              'sale_report.xml',
              'views/tour_query_report.xml',
-             'crm_lead_view.xml',
+             # 'crm_lead_view.xml',
  'report.xml',
     ],    'demo': [],
     'installable': True,

@@ -7,4 +7,4 @@
 import tour
 import report
 import wizard
-import crm_lead
+# import crm_lead

@@ -192,6 +192,7 @@ class tour_hotel_vender(models.Model):
 
 class res_partner(models.Model):
     _inherit = 'res.partner'
+
     dob= fields.Date('Date of Birth ', )
     dan= fields.Date('Date of Anniviersy ', )
     ref_type= fields.Selection([ ('walking','Walking'), ('referred','Referred'), ],'Type')
@@ -205,9 +206,11 @@ class res_partner(models.Model):
         'res.better.zip',
         string='Locations',
         help='Destination cities of travel.',
-    )    
+    )
 
-    
+    _sql_constraints = [
+        ('mobile_uniq_constaints','unique(mobile)', 'The mobile number must be unique !')
+    ]
 #     _columns = {
 #                 'dob': fields.datetime('Date of Birth ', ),
 #                 'dan': fields.datetime('Date Anniveaty',),
@@ -347,7 +350,7 @@ class tour_ticket(models.Model):
     _description='Ticket'        
     _inherit = ['mail.thread']      
     name = fields.Char('Name', required=True)
-    query=fields.Many2one('crm.lead')
+    query=fields.Many2one('tour.query')
     ticket_date = fields.Date('Date of Travel ')
     ticket_return = fields.Date('Date of return ')
     ref_type= fields.Selection([ ('economy','Economy'), ('first','First class'),('business','Business class'), ('premium','Premium Economy') ],'Class of travel ', default='economy')
@@ -364,7 +367,7 @@ class tour_ticket(models.Model):
         'res.better.zip',
         string='Locations',
         help='Destination cities of travel.',
-    )    
+    )
     def _get_dest(self, cr, uid, context=None):
         res = self.search(cr, uid, [],limit=1,order='id desc',context=context)
         if res:
@@ -444,7 +447,7 @@ class tour_transport(models.Model):
     _inherit = ['mail.thread']          
     name = fields.Char('Name', required=True)
     no_day = fields.Char('No of Days')
-    query =fields.Many2one('crm.lead','Tour')
+    query =fields.Many2one('tour.query','Tour')
     type_mode= fields.Selection([ ('point','Point to Point (P2P)'), ('dispo','Disposal'), ],' Select mode of transport')   
     vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor') 
     vehicle =fields.Char('Vehicle')
@@ -479,7 +482,7 @@ class tour_hotel_all(models.Model):
     _rec_name = 'hotel_id'
     check_in=fields.Date('Check IN')
     check_out=fields.Date('Check OUT')
-    tour_id =fields.Many2one('crm.lead','Tour')
+    tour_id =fields.Many2one('tour.query','Tour')
     hotel_id  = fields.Many2one('tour.hotel', 'Hotel', required=True)
     mean_id=fields.Many2one('tour.hotel.meal','Meal Plan')
     vender_ids = fields.Many2many('tour.hotel.vender',id1='line_id', id2='val_id',string='Vendor Detail')
@@ -505,6 +508,7 @@ class tour_hotel_all(models.Model):
                        'message' : warn_msg
                     }
         return {'value': res, 'warning': warning}
+
     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False,vendor=False,diret_hotel=False, context=None):
         res = {}
         case_obj = self.pool.get('tour.query')
@@ -541,14 +545,18 @@ class tour_hotel_all(models.Model):
                 res['value'] = {'vender_ids': v, 'invoice_ids': inv_all+vender_all}              
         else:
                res['value'] = {'vender_ids': [], 'invoice_ids': []}            
-        return res        
-                          
+        return res
+
 class tour_query_line(models.Model):
+
     _name ='tour.query.line'
+
     name = fields.Char('Day', required=True)
     city = fields.Many2one('res.better.zip',"City")
+    city_day = fields.Many2one('day.description','City Days')
+    city_description = fields.Char('Description', related='city_day.Description')
     to_date = fields.Date('To Date')
-    query = fields.Many2one('crm.lead',"Query")
+    query = fields.Many2one('tour.query',"Query")
     price = fields.Float(string="Price")
     end_date = fields.Date('End Date')
     hotel_id = fields.Many2one(
@@ -564,7 +572,6 @@ class tour_query_line(models.Model):
         'Ticket',
     )              
 
-       
     def onchange_date(self, cr, uid, ids, to_date, end_date, context=None):
         res = {}
         tour_query_obj = self.pool.get('tour.query')
@@ -574,7 +581,6 @@ class tour_query_line(models.Model):
                 if line.id > ids[0]:
                     write_true = self.write(cr, uid, line.id, {'to_date':end_date})
                     break
-                    
 
         return {'value': {}}
                     
@@ -592,7 +598,8 @@ class tour_query(models.Model):
     ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor', track_visibility='onchange')
     tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor', track_visibility='onchange')
     tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor', track_visibility='onchange')
-    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True, track_visibility='onchange',)
+    state_id = fields.Many2many('res.country.state','sdt', 'sde',string='State',required=True, track_visibility='onchange')
+    location_id = fields.Many2many('res.better.zip','idt', 'ide',string='Destination',required=True, track_visibility='onchange', context="{'flag':True}")
     adult_no = fields.Integer('Number of Adult', track_visibility='onchange')
     cwb_no = fields.Integer('CWB', track_visibility='onchange')
     cw_no = fields.Integer('CNB', track_visibility='onchange')
@@ -660,6 +667,7 @@ class tour_query(models.Model):
             ('draft', 'Not Confirmed'),
             ('done', 'Confirmed'),
             ('cancel','Cancel') ], track_visibility='onchange',)
+
     def copy(self, cr, uid, id, default=None, context=None):
         default = default or {}
         context = context or {}
@@ -669,7 +677,22 @@ class tour_query(models.Model):
         default['sale_id'] = False
         return super(tour_query, self).copy(cr, uid, id, default, context)
 
-#
+    # @api.onchange('state_id')
+    # def onchange_state_id(self):
+    #     print "callllllllll on change=======state",self
+    #     # self.location_id = [(4,[1])]
+    #     print "------>>>"
+        # state_list = []
+        # if self.state_id:
+        #     for state_id in self.state_id:
+        #         state_list.append(state_id.id)
+        # if len(state_list) > 0:
+        #     location_obj = self.env['res.better.zip']
+        #     name = self.location_id.name_search([])
+
+
+
+
 #     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False, context=None):
 #         res = {}
 #         case_obj = self.pool.get('tour.query')
@@ -706,6 +729,7 @@ class tour_query(models.Model):
             'context': {'type': 'out_invoice'},
             'type': 'ir.actions.act_window',
         }
+
     def make_invoice(self, cr, uid, ids, context=None):
         case_obj = self.pool.get('tour.query')
         obj_sale_order_line = self.pool.get('sale.order.line')
@@ -779,10 +803,11 @@ class tour_query(models.Model):
 #              if context.get('open_invoices', False):
               #      return self.open_invoices(cr, uid, ids, inv_all, context=context)
             return {'type': 'ir.actions.act_window_close'}
+
     _defaults = {
-  'tour_type':'domestic',
- 'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
-  }
+      'tour_type':'domestic',
+     'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
+      }
 
     def action_button_confirm(self, cr, uid, ids, context=None):
         self.write(cr, uid, ids, {'state':'done'})
@@ -791,6 +816,7 @@ class tour_query(models.Model):
     def action_button_(self, cr, uid, ids, context=None):
         self.write(cr, uid, ids, {'state':'cancel'})
         return True
+
     def create(self, cr, uid, vals, context=None):
         if ('name' not in vals) or (vals.get('name') in ('/', False)):
             if  vals.get('tour_type') == 'domestic':
