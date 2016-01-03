@@ -65,6 +65,12 @@ class BetterZip(models.Model):
         if self.state_id:
             self.country_id = self.state_id.country_id
 
+    @api.model
+    def default_get(self, fields):
+        data = super(BetterZip, self).default_get(fields)
+        data.update({'country_id': self._context.get('country_id')})
+        return data
+
     @api.v7
     def name_search(self, cr, user, name, args=None, operator='ilike', context=None, limit=100):
         if context.has_key("state_id"):
@@ -74,10 +80,14 @@ class BetterZip(models.Model):
         if context.has_key('query'):
             tour_query_obj = self.pool.get('tour.query')
             tour_query = tour_query_obj.browse(cr,user,context.get('query'),context)
-            print "aasdasdasdasd uuuuuuuuuu",tour_query.location_id.ids
-            if tour_query.location_id.id:
-                ids = self.search(cr, user, [('id','=',tour_query.location_id.id)],limit=limit, context=context)
-                print "iiiiiiiiiiiiiiiiddddddddddddddddsssssssss",ids
+            location_lst = []
+            # def_get = tour_query.default_get(cr, user, fields, context=None)
+            # print "\n\n\ndefault get ::::::::::::def_get",def_get
+            for i in tour_query.location_id:
+                location_lst.append(i.id)
+            if len(location_lst) > 0:
+                ids = self.search(cr, user, [('id','in',location_lst)],limit=limit, context=context)
+                return self.name_get(cr, user, ids, context=context)
         ids = self.search(cr, user, [],limit=limit, context=context)
         return self.name_get(cr, user, ids, context=context)
 

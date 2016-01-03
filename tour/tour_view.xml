@@ -1180,6 +1180,7 @@
                                 <field name="tour_type"
                                        on_change="onchange_tour_type(tour_type)"/>
                                 <field name="emp_id"/>
+                                <field name="company_id"/>
                                 <field name="days"/>
                                 <field name="to_date"/>
                                 <field name="adult_no" class="oe_inline"/>

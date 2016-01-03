@@ -134,7 +134,7 @@ class tour_hotel(models.Model):
     street2 = fields.Char('Street2')    
     be_group= fields.Char('Group')
     phone = fields.Char('Hotel Phone')   
-    line_ids=fields.One2many('tour.hotel.contact', 'partner_hotel_id', 'Contact Detail', )     
+    line_ids=fields.One2many('tour.hotel.contact', 'partner_hotel_id', 'Contact Detail')
      
     @api.one
     @api.onchange('zip_id')
@@ -169,14 +169,9 @@ class tour_hotel_vender(models.Model):
 #         'city': fields.char('City'),
 #         'state_id': fields.many2one("res.country.state", 'State'),
 #         'country_id': fields.many2one('res.country', 'Country')
-    email = fields.Char(
-                     string='Email',required=True)
-
-    #
+    email = fields.Char(string='Email',required=True)
     street = fields.Char('Street', )
     street2 = fields.Char('Street2')
-     
-    
     partner_id = fields.Many2one(
         'res.partner',
         'Contact Person',
@@ -187,13 +182,18 @@ class tour_hotel_vender(models.Model):
         'res.partner',
         'Contact Person',
         help="Contact Person.",)
-    email = fields.Char(
-        string='Email',)
+
+    @api.model
+    def create(self, vals):
+        res = super(tour_hotel_vender, self).create(vals)
+        res['name']=res['name'].title()
+        return res
 
 class res_partner(models.Model):
+
     _inherit = 'res.partner'
 
-    dob= fields.Date('Date of Birth ', )
+    dob= fields.Date('Date of Birth ',)
     dan= fields.Date('Date of Anniviersy ', )
     ref_type= fields.Selection([ ('walking','Walking'), ('referred','Referred'), ],'Type')
     ref_partner_id=fields.Many2one('res.partner', 'Refer by Existing Customer')
@@ -211,6 +211,13 @@ class res_partner(models.Model):
     _sql_constraints = [
         ('mobile_uniq_constaints','unique(mobile)', 'The mobile number must be unique !')
     ]
+
+    @api.model
+    def create(self,vals):
+        res = super(res_partner,self).create(vals)
+        name = res.name
+        res.name = name.title()
+        return res
 #     _columns = {
 #                 'dob': fields.datetime('Date of Birth ', ),
 #                 'dan': fields.datetime('Date Anniveaty',),
@@ -622,6 +629,7 @@ class tour_query(models.Model):
     all_ids=fields.One2many('tour.hotel.all', 'tour_id', 'Hotel/Vendor/Invoice Detail', track_visibility='onchange')
     vendor = fields.Boolean('Hotel Vendor', track_visibility='onchange',)
     direct = fields.Boolean('Direct Hotel', track_visibility='onchange')
+    company_id = fields.Many2one('res.company')
     hotel_id = fields.Many2one(
         'tour.hotel',
         'Hotel',
@@ -988,9 +996,7 @@ class account_invoice(models.Model):
                 t_name='/'.join(new_name)
                 vals['internal_number']=t_name
         return res
-    
-    
-    
+
 class sale_order(models.Model):
     _inherit ='sale.order' 
     dis_all= fields.Boolean('Display line')
