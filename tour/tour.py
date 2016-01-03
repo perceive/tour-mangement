@@ -459,9 +459,15 @@ class tour_transport(models.Model):
     destination_l = fields.Many2one('res.better.zip','Destination Location')
     from_date = fields.Date('From Date ')
     to_date = fields.Date('To Date')
-    
-    
-#     ref_type= fields.Selection([ ('oneway','One way'), ('twoway','Two way'), ],'Type')   
+
+
+    # @api.model
+    # def default_get(self, fields):
+    #     data = super(tour_transport, self).default_get(fields)
+    #     print '::::::::::',self._context, data
+    #     # data.update({'country_id': self._context.get('country_id')})
+    #     return data
+#     ref_type= fields.Selection([ ('oneway','One way'), ('twoway','Two way'), ],'Type')
 #     client_felxi = fields.Boolean('Client Flexibale')
 #     client_days = fields.Integer('Felxibale Days')
 #     amount_price_t = fields.Float('Ticket Price')
@@ -553,11 +559,10 @@ class tour_query_line(models.Model):
 
     name = fields.Char('Day', required=True)
     city = fields.Many2one('res.better.zip',"City")
-    city_day = fields.Many2one('day.description','City Days')
+    city_day = fields.Many2one('day.description','Keyword')
     city_description = fields.Char('Description', related='city_day.Description')
     to_date = fields.Date('To Date')
     query = fields.Many2one('tour.query',"Query")
-    price = fields.Float(string="Price")
     end_date = fields.Date('End Date')
     hotel_id = fields.Many2one(
         'tour.hotel',
@@ -603,6 +608,8 @@ class tour_query(models.Model):
     adult_no = fields.Integer('Number of Adult', track_visibility='onchange')
     cwb_no = fields.Integer('CWB', track_visibility='onchange')
     cw_no = fields.Integer('CNB', track_visibility='onchange')
+    child_with_bed_ids = fields.One2many('child.with.bed', 'tour_id', 'Age')
+    child_no_bed_ids = fields.One2many('child.without.bed', 'tour_id', 'Age')
     to_date = fields.Date('Start Date',required=True, track_visibility='onchange')
     extra_no = fields.Integer('Extra Adult', track_visibility='onchange')
     infants = fields.Integer('Number of infants', track_visibility='onchange')
@@ -676,6 +683,44 @@ class tour_query(models.Model):
             default['line_ids'] = False
         default['sale_id'] = False
         return super(tour_query, self).copy(cr, uid, id, default, context)
+
+    @api.onchange('cwb_no')
+    def onchange_cwb_no(self):
+        lst_age = []
+        for cwb in range(self.cwb_no):
+            lst_age.append((0, 0, {'name': 'Child'+str(cwb+1), 'age': ''}))
+        self.child_with_bed_ids = lst_age
+
+    @api.onchange('cw_no')
+    def onchange_cb_no(self):
+        lst_age = []
+        for cb in range(self.cw_no):
+            lst_age.append((0, 0, {'name': 'Child'+str(cb+1), 'age': ''}))
+        self.child_no_bed_ids = lst_age
+
+    # @api.onchange('cw_no')
+    # def onchange_cw_no(self):
+    #     lst_age = []
+    #     for age in self.age_ids:
+    #         if age.cwb_cnb_age == 'CNB':
+    #             self.age_ids = [2, age.id]
+    #     if self.age_ids:
+    #         for age in self.age_ids:
+    #             lst_age.append((0, 0, {'cwb_cnb_age': age.cwb_cnb_age, 'name': age.name, 'age': age.age}))
+    #     for cw in range(self.cw_no):
+    #         lst_age.append((0, 0, {'cwb_cnb_age': 'CNB', 'name':'Child'+str(cw+1), 'age': ''}))
+    #     self.age_ids = lst_age
+
+        # for cw in range(self.cw_no):
+        #     lst_age.append((0, 0, {'cwb_cnb_age': 'CNB', 'name':'Child'+str(cw+1), 'age': ''}))
+        # self.age_ids = lst_age
+    # @api.onchange('transport_ids')
+    # def onchange_transport(self):
+    #     print ':::::::::',self._context
+    #     for transport in self.transport_ids:
+    #         if transport.destination_l:
+    #             transport.source_l = transport.destination_l
+    #             print '>>>>>>>>.',transport.source_l
 
     # @api.onchange('state_id')
     # def onchange_state_id(self):
@@ -762,7 +807,6 @@ class tour_query(models.Model):
                     elif (line.state in states):
                         lines.append(line.id)
                 created_lines = obj_sale_order_line.invoice_line_create(cr, uid, lines)
-                print "==================ddddddddddddddd======================="
                 for line in created_lines:
                     inv = {
                         'name': case.sale_id.client_order_ref or '',
@@ -925,8 +969,24 @@ class sale_order(models.Model):
        
 class sale_order_line(models.Model):
     _inherit ='sale.order.line' 
-    vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor')        
-    
+    vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor')
+
+class child_with_bed(models.Model):
+
+    _name = 'child.with.bed'
+
+    name = fields.Char('Name')
+    age = fields.Char('Age')
+    tour_id = fields.Many2one('Tour.query','Tour')
+
+class child_without_bed(models.Model):
+
+    _name = 'child.without.bed'
+
+    name = fields.Char('Name')
+    age = fields.Char('Age')
+    tour_id = fields.Many2one('Tour.query','Tour')
+
 # class email_template(models.Model):
 #     _inherit ='email.template' 
 #     
