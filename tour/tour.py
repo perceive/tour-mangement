@@ -349,19 +349,18 @@ class tour_ticket(models.Model):
     _name ='tour.ticket'
     _description='Ticket'        
     _inherit = ['mail.thread']      
-    name = fields.Char('Name', required=True)
+    # name = fields.Char('Name', required=True)
     query=fields.Many2one('tour.query')
-    ticket_date = fields.Date('Date of Travel ')
-    ticket_return = fields.Date('Date of return ')
+    ticket_date = fields.Date('Depart Date')
+    ticket_return = fields.Date('Return Date')
     ref_type= fields.Selection([ ('economy','Economy'), ('first','First class'),('business','Business class'), ('premium','Premium Economy') ],'Class of travel ', default='economy')
     mode_type= fields.Selection([ ('bus','Bus'), ('train','Train'),('air','Air') ],'Mode of travel', default='air')
-    client_felxi = fields.Boolean('Client Flexible')
     oneway = fields.Boolean('One way')
     twoway = fields.Boolean('Return')
     client_days = fields.Integer('Flexible Days')
     vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor')  
     destination = fields.Many2one('res.better.zip','Destination')
-    source = fields.Many2one('res.better.zip','Source', )
+    source = fields.Many2one('res.better.zip','Origin')
     amount_price_t = fields.Float('Ticket Price')
     location_id = fields.Many2many(
         'res.better.zip',
@@ -669,11 +668,47 @@ class tour_query(models.Model):
     days= fields.Integer('No of Night',required=True, track_visibility='onchange')
     line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', track_visibility='onchange')
     ticket_emp_id = fields.Many2one('hr.employee',string='Employee', track_visibility='onchange')
-    ticket_ids=fields.One2many('tour.ticket', 'query', 'Ticket Detail', track_visibility='onchange',)
+    ticket_ids_one=fields.One2many('tour.ticket', 'query', 'Ticket Detail', track_visibility='onchange',)
+    ticket_ids_round=fields.One2many('tour.ticket', 'query', 'Ticket Detail', track_visibility='onchange',)
+    ticket_ids_multi=fields.One2many('tour.ticket', 'query', 'Ticket Detail', track_visibility='onchange',)
     state =fields.Selection([
             ('draft', 'Not Confirmed'),
             ('done', 'Confirmed'),
             ('cancel','Cancel') ], track_visibility='onchange',)
+
+    one_way = fields.Boolean('One Way')
+    round_trip = fields.Boolean('Round Trip')
+    multicity = fields.Boolean('Multicity')
+
+    @api.onchange('ticket')
+    def onchange_ticket(self):
+        self.one_way = True
+
+    @api.onchange('one_way')
+    def onchange_one_way(self):
+        lst_one_way = []
+        if self.one_way == True:
+            self.round_trip = False
+            self.multicity = False
+        lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
+        self.ticket_ids_one = lst_one_way
+
+
+    @api.onchange('round_trip')
+    def onchange_round_trip(self):
+        lst_one_way = []
+        if self.round_trip == True:
+            self.one_way = False
+            self.multicity = False
+        lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
+        self.ticket_ids_round = lst_one_way
+
+
+    @api.onchange('multicity')
+    def onchange_multicity(self):
+        if self.multicity == True:
+            self.round_trip = False
+            self.one_way = False
 
     def copy(self, cr, uid, id, default=None, context=None):
         default = default or {}
@@ -873,7 +908,7 @@ class tour_query(models.Model):
 
         new_id = super(tour_query, self).create(cr, uid, vals, context=context)
         line_obj=self.pool.get('tour.query.line')
-        tr_obj=self.pool.get('tour.ticket')
+        # tr_obj=self.pool.get('tour.ticket')
         trac_obj=self.pool.get('tour.transport')
         vals1={}
         tr_vals2={}
@@ -894,11 +929,11 @@ class tour_query(models.Model):
 
                 vals1.update({'name':name2,'query':new_id,'end_date':next_date,'to_date':to_date})
 
-                tr_vals2.update({'query':new_id,'ticket_date':to_date})
+                # tr_vals2.update({'query':new_id,'ticket_date':to_date})
                 trc_vals.update({'query':new_id,'from_date':to_date,'to_date':next_date})
 
                 line_obj.create(cr,uid,vals1,context=context)
-                tr_obj.create(cr,uid,tr_vals2,context=context)
+                # tr_obj.create(cr,uid,tr_vals2,context=context)
                 trac_obj.create(cr,uid,trc_vals,context=context)
         return new_id
 
