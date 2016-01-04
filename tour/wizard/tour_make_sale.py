@@ -275,6 +275,7 @@ class tour_send_query(osv.osv_memory):
         active_id = context and context.get('active_ids', []) or []
         temp_obj = self.pool.get('email.template')
         case_obj = self.pool.get('tour.query')
+        ven_obj = self.pool.get('tour.hotel.vender')
         vender_email_list = []
         for make in self.browse(cr, uid, ids, context=context):
             for case in case_obj.browse(cr, uid, active_id, context=context):
@@ -294,50 +295,78 @@ class tour_send_query(osv.osv_memory):
         if len(vender_email_list) > 0:
             for vender_email in vender_email_list:
                 data = ''
+                # ven_id = ven_obj.search(cr,uid,[('email','=',vender_email)],context)
+                # print ven_id,ven_id,ven_id,ven_id,ven_id
+                # ven_rec = ven_obj.browse(cr,uid,ven_id,context)
                 for case in case_obj.browse(cr, uid, active_id, context=context):
+                    data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Customer Detail</b></font></td></tr>'
+                    data += '<tr><td><b>Name</b></td><td>%s</td></tr>'%(case.customer_id.name)
+                    data += '<tr><td><b>Number of Adults</b></td><td>%s</td></tr>'%(case.adult_no)
+                    data += '<tr><td><b>Extra Adult</b></td><td>%s</td></tr>'%(case.extra_no)
+                    data += '<tr><td><b>Infants</b></td><td>%s</td></tr>'%(case.infants)
+                    data += '<tr><td><b>Children With Bead</b></td><td>%s</td></tr>'%(case.cwb_no)
+                    data += '<tr><td><b>Child With out Bead</b></td><td>%s</td></tr></table><br/>'%(case.cw_no)
+
                     if case.ticket == True and case.tc_vendor_id:
                         if case.tc_vendor_id.email == vender_email:
-                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Ticket Detail</b></font></td></tr><tr><td><b>Ticket Name</b></td><td><b>Mode</b></td><td><b>Date of Travel</b></td><td><b>Flexible</b></td><td><b>Class Of Travel</b></td><td><b>Source</b></td><td><b>Destination</b></td></tr>'
-                            data += '<tr></tr>'
+                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Ticket Detail</b></font></td></tr><tr><td><b>Mode</b></td><td><b>Origin</b></td><td><b>Destination</b></td><td><b>Depart Date</b></td><td><b>Flexible Days</b></td><td><b>Class of travel</b></td></tr>'
+                            if case.one_way:
+                                for ticket_rec in case.ticket_ids_one:
+                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
+                            elif case.round_trip:
+                                for ticket_rec in case.ticket_ids_round:
+                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
+                            if case.multicity:
+                                for ticket_rec in case.ticket_ids_multi:
+                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
                             data += '</table><br/><br/>'
+
                     if case.hotel == True and case.all_ids:
                         for hotel_info in case.all_ids:
                             if hotel_info.vender_ids.email == vender_email:
                                 data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=4><font color="white"><b>Hotel Detail</b></font></td></tr><tr><td><b>Check IN</b></td><td><b>Check OUT</b></td><td><b>Meal Plan</b></td></tr>'
-                                data += '<tr></tr>'
+                                data += '<tr>'
+
+                                data += '</tr>'
                                 data += '</table><br/><br/>'
 
                     if case.trnsport == True and case.tr_vendor_id:
                         if case.tr_vendor_id.email == vender_email:
                             data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=6><font color="white"><b>Transportation Detail</b></font></td></tr><tr><td><b>From Date</b></td><td><b>Source Location</b></td><td><b>To Date</b></td><td><b>Destination Location</b></td><td><b>mode of transport</b></td><td><b>Vehicle</b></td></tr>'
-                            data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'
+                            for trnsport_rec in case.transport_ids:
+                                data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(trnsport_rec.from_date,trnsport_rec.source_l.city, trnsport_rec.to_date, trnsport_rec.destination_l.city, trnsport_rec.type_mode, trnsport_rec.vehicle)
                             data += '</table><br/><br/>'
+
                     if case.extraction == True and case.ex_vendor_id:
                         if case.ex_vendor_id.email == vender_email:
-                            print ""
-                            # data += '<table border=2><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Ticket Detail</b></font></td></tr><tr><td><b>Ticket Name</b></td><td><b>Mode</b></td><td><b>Date of Travel</b></td><td><b>Flexible</b></td><td><b>Class Of Travel</b></td><td><b>Source</b></td><td><b>Destination</b></td></tr>'
-                            # data += '<tr></tr>'
-                            # data += '</table><br/><br/>'
+                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Extraction Detail</b></font></td></tr><tr><td><b>Days</b></td><td><b>Date</b></td><td><b>City</b></td><td><b>Discription</b></td></tr>'
+                            for ext_rec in case.line_ids:
+                                data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ext_rec.name,ext_rec.to_date,ext_rec.city.city,ext_rec.city_description)
+                            data += '</table><br/><br/>'
 
-                mail_obj=self.pool.get('mail.mail')
-                email_server=self.pool.get('ir.mail_server')
-                email_sender_id=email_server.search(cr, uid, [],limit=1)
-                email_sender_rec = email_server.browse(cr,uid,email_sender_id,context)
-                mail_data={
-                   'email_from':email_sender_rec.smtp_user,
-                   'email_to':vender_email,
-                   'subject':'Request for Quotation',
-                   'body_html':'<div><p>Hello,</p> </br>'
-                                '<p>We Requesting Quotation Regarding this Information.</p>'
-                                '<p>%s</p>'
-                                '<p>Best Regards<br/>'
-                               'Shree Salasar Holidays<br/>'
-                               'Phone : +0261-4021666, +91 9998030666,<br/></p>'%(data)
-                }
-                print "--------",mail_data
-                mail_id = mail_obj.create(cr, uid, mail_data, context)
-                mail_obj.send(cr, uid, mail_id, context)
-                print "mail send ------>>>>>>>>>"
+                    mail_obj=self.pool.get('mail.mail')
+                    email_server=self.pool.get('ir.mail_server')
+                    email_sender_id=email_server.search(cr, uid, [],limit=1)
+                    email_sender_rec = email_server.browse(cr,uid,email_sender_id,context)
+                    # if ven_rec.id:
+                    #     ven_name = ven_rec.name or ""
+                    mail_data={
+                       'email_from':email_sender_rec.smtp_user,
+                       'email_to':vender_email,
+                       'subject':'Request for Quotation',
+                       'body_html':'<div><p>Dear,</p> </br>'
+                                    '<p>Greetings From Shree Salasar Holidays</p>'
+                                    '<p>Require Quotation for below described details</p>'
+                                    '<p>%s</p>'
+                                    '<p>Best Regards<br/>'
+                                   'Shree Salasar Holidays<br/>'
+                                   'Phone : +0261-4021666, +91 9998030666,<br/></p>'
+                                   %(data)
+                    }
+                    print "--------",mail_data
+                    mail_id = mail_obj.create(cr, uid, mail_data, context)
+                    mail_obj.send(cr, uid, mail_id, context)
+                    print "mail send ------>>>>>>>>>"
 
                 # for tour_query in case_obj.browse(cr, uid, active_id, context=context):
                 #     print "========>>>>>>case",tour_query.name
