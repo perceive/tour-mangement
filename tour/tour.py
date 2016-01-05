@@ -911,7 +911,7 @@ class tour_query(models.Model):
             elif vals.get('tour_type') == 'international':
                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
 
-        new_id = super(tour_query, self).create(cr, uid, vals, context=context)
+        # new_id = super(tour_query, self).create(cr, uid, vals, context=context)
         context = context or {}
 
         new_id = super(tour_query, self).create(cr, uid, vals, context=context)
