@@ -8,24 +8,21 @@
           <field name="model">tour.make.sale</field>
           <field name="arch" type="xml">
             <form string="Convert to Quotation" >
- <group cols="4">
-                    <field name="partner_id" required="1"/>
-          <field name="tr_amount"/>
-    <field name="hr_amount"/>
-    <field name="trc_amount"/>
-    <field name="is_amount"/>
-    <field name="ex_amount"/>
-    <field name="pas_amount"/>
-	<field name="v_amount"/>
-
-<field name="margin_amount"/>
-<field name="absolute"  on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
-<field name="percentage" on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
-
-</group>
-                    <button name="makeOrder_sale" string="Create" type="object" class="oe_highlight"/>
-                    <button string="Cancel" class="oe_link" special="cancel" />
-
+             <group cols="4">
+                 <field name="partner_id" required="1"/>
+                 <field name="tr_amount"/>
+                 <field name="hr_amount"/>
+                 <field name="trc_amount"/>
+                 <field name="is_amount"/>
+                 <field name="ex_amount"/>
+                 <field name="pas_amount"/>
+                 <field name="v_amount"/>
+                <field name="margin_amount"/>
+                <field name="absolute"  on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
+                <field name="percentage" on_change="onchange_absolute(margin_amount,absolute,percentage)"/>
+            </group>
+                <button name="makeOrder_sale" string="Create" type="object" class="oe_highlight"/>
+                <button string="Cancel" class="oe_link" special="cancel" />
             </form>
           </field>
        </record>
@@ -33,13 +30,13 @@
        <!-- crm make sale's  action -->
 
        <record id="action_tour_make_sale" model="ir.actions.act_window">
-          <field name="name">Create Sale</field>
-          <field name="type">ir.actions.act_window</field>
-          <field name="res_model">tour.make.sale</field>
-          <field name="view_type">form</field>
-          <field name="view_mode">form</field>
-          <field name="target">new</field>
- 		<field name="view_id" ref="view_tour_make_sale"/>
+           <field name="name">Create Sale</field>
+           <field name="type">ir.actions.act_window</field>
+           <field name="res_model">tour.make.sale</field>
+           <field name="view_type">form</field>
+           <field name="view_mode">form</field>
+           <field name="target">new</field>
+           <field name="view_id" ref="view_tour_make_sale"/>
        </record>
 
 <!-- Send Query -->

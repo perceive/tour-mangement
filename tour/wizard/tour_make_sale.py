@@ -9,7 +9,7 @@ from openerp import workflow
 
 
 class tour_make_sale(osv.osv_memory):
-    """ Make sale  order for crm """
+    """ Make sale order for crm """
 
     _name = "tour.make.sale"
     _description = "Make sales"
@@ -94,7 +94,6 @@ class tour_make_sale(osv.osv_memory):
                 if not case.sale_id:
                     new_id = sale_obj.create(cr, uid, vals, context=context)
                     case_obj.write(cr, uid, [case.id], {'sale_id': new_id})
-                    print "======================"
                     if case.hotel_id:
                         line_obj.create(cr, uid, {
                             'name': 'Hotel Exp',
@@ -300,48 +299,99 @@ class tour_send_query(osv.osv_memory):
                 # ven_rec = ven_obj.browse(cr,uid,ven_id,context)
                 for case in case_obj.browse(cr, uid, active_id, context=context):
                     data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Customer Detail</b></font></td></tr>'
-                    data += '<tr><td><b>Name</b></td><td>%s</td></tr>'%(case.customer_id.name)
-                    data += '<tr><td><b>Number of Adults</b></td><td>%s</td></tr>'%(case.adult_no)
-                    data += '<tr><td><b>Extra Adult</b></td><td>%s</td></tr>'%(case.extra_no)
-                    data += '<tr><td><b>Infants</b></td><td>%s</td></tr>'%(case.infants)
-                    data += '<tr><td><b>Children With Bead</b></td><td>%s</td></tr>'%(case.cwb_no)
-                    data += '<tr><td><b>Child With out Bead</b></td><td>%s</td></tr></table><br/>'%(case.cw_no)
-
+                    data += '<tr><td><b>Name</b></td><td>%s</td></tr>'%(case.customer_id.name or '')
+                    data += '<tr><td><b>Number of Adults</b></td><td>%s</td></tr>'%(case.adult_no or '')
+                    data += '<tr><td><b>Extra Adult</b></td><td>%s</td></tr>'%(case.extra_no or '')
+                    data += '<tr><td><b>Infants</b></td><td>%s</td></tr>'%(case.infants or '')
+                    data += '<tr><td><b>Children With Bead</b></td><td>%s</td></tr>'%(case.cwb_no or '')
+                    data += '<tr><td><b>Child With out Bead</b></td><td>%s</td></tr></table><br/>'%(case.cw_no or '')
+                    vender_name = ''
                     if case.ticket == True and case.tc_vendor_id:
                         if case.tc_vendor_id.email == vender_email:
-                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Ticket Detail</b></font></td></tr><tr><td><b>Mode</b></td><td><b>Origin</b></td><td><b>Destination</b></td><td><b>Depart Date</b></td><td><b>Flexible Days</b></td><td><b>Class of travel</b></td></tr>'
+                            data += '<table border=1 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Ticket Detail</b></font></td></tr><tr><td><b>Mode</b></td><td><b>Origin</b></td><td><b>Destination</b></td><td><b>Depart Date</b></td><td><b>Flexible Days</b></td><td><b>Class of travel</b></td></tr>'
                             if case.one_way:
+                                vender_name = case.tc_vendor_id.name
                                 for ticket_rec in case.ticket_ids_one:
-                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
+                                    data += '<tr>'
+                                    data += '<td>%s</td>'%(ticket_rec.mode_type or '')
+                                    data += '<td>%s</td>'%(ticket_rec.source.city or '')
+                                    data += '<td>%s</td>'%(ticket_rec.destination.city or '')
+                                    data += '<td>%s</td>'%(ticket_rec.ticket_date or '')
+                                    data += '<td>%s</td>'%(ticket_rec.client_days or '')
+                                    data += '<td>%s</td>'%(ticket_rec.ref_type or '')
+                                    data += '</tr>'
                             elif case.round_trip:
+                                vender_name = case.tc_vendor_id.name
                                 for ticket_rec in case.ticket_ids_round:
-                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
+                                    data += '<tr>'
+                                    data += '<td>%s</td>'%(ticket_rec.mode_type or '')
+                                    data += '<td>%s</td>'%(ticket_rec.source.city or '')
+                                    data += '<td>%s</td>'%(ticket_rec.destination.city or '')
+                                    data += '<td>%s</td>'%(ticket_rec.ticket_date or '')
+                                    data += '<td>%s</td>'%(ticket_rec.client_days or '')
+                                    data += '<td>%s</td>'%(ticket_rec.ref_type or '')
+                                    data += '</tr>'
                             if case.multicity:
+                                vender_name = case.tc_vendor_id.name
                                 for ticket_rec in case.ticket_ids_multi:
-                                    data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ticket_rec.mode_type,ticket_rec.source.city,ticket_rec.destination.city,ticket_rec.ticket_date,ticket_rec.client_days,ticket_rec.ref_type)
+                                    data += '<tr>'
+                                    data += '<td>%s</td>'%(ticket_rec.mode_type)
+                                    data += '<td>%s</td>'%(ticket_rec.source.city)
+                                    data += '<td>%s</td>'%(ticket_rec.destination.city)
+                                    data += '<td>%s</td>'%(ticket_rec.ticket_date)
+                                    data += '<td>%s</td>'%(ticket_rec.client_days)
+                                    data += '<td>%s</td>'%(ticket_rec.ref_type)
+                                    data += '</tr>'
                             data += '</table><br/><br/>'
 
                     if case.hotel == True and case.all_ids:
+                        hotel_data = ''
                         for hotel_info in case.all_ids:
                             if hotel_info.vender_ids.email == vender_email:
-                                data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=4><font color="white"><b>Hotel Detail</b></font></td></tr><tr><td><b>Check IN</b></td><td><b>Check OUT</b></td><td><b>Meal Plan</b></td></tr>'
-                                data += '<tr>'
+                                vender_name = case.tc_vendor_id.name
+                                hotel_data += '<tr>'
+                                hotel_data += '<td>%s</td>'%(hotel_info.hotel_id.name or '')
+                                hotel_data += '<td>%s</td>'%(hotel_info.hotel_id.name or '')
+                                hotel_data += '<td>%s</td>'%(hotel_info.check_in or '')
+                                hotel_data += '<td>%s</td>'%(hotel_info.check_out or '')
+                                hotel_data += '<td>%s</td>'%(hotel_info.mean_id.name or '')
 
-                                data += '</tr>'
-                                data += '</table><br/><br/>'
+                        if hotel_data != '':
+                            data += '<table border=1 width="100%"><tr><td bgcolor="#03578D" colspan=5><font color="white"><b>Hotel Detail</b></font></td></tr><tr><td><b>Hotel Name</b></td><td><b>Number of Night</b></td><td><b>Check IN</b></td><td><b>Check OUT</b></td><td><b>Meal Plan</b></td></tr>'
+                            data += '%s'%(hotel_data)
+                            data += '</table><br/><br/>'
 
                     if case.trnsport == True and case.tr_vendor_id:
                         if case.tr_vendor_id.email == vender_email:
-                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=6><font color="white"><b>Transportation Detail</b></font></td></tr><tr><td><b>From Date</b></td><td><b>Source Location</b></td><td><b>To Date</b></td><td><b>Destination Location</b></td><td><b>mode of transport</b></td><td><b>Vehicle</b></td></tr>'
+                            vender_name = case.tc_vendor_id.name
+                            data += '<table border=1 width="100%"><tr><td bgcolor="#03578D" colspan=6><font color="white"><b>Transportation Detail</b></font></td></tr><tr><td><b>From Date</b></td><td><b>Source Location</b></td><td><b>To Date</b></td><td><b>Destination Location</b></td><td><b>mode of transport</b></td><td><b>Vehicle</b></td></tr>'
                             for trnsport_rec in case.transport_ids:
-                                data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(trnsport_rec.from_date,trnsport_rec.source_l.city, trnsport_rec.to_date, trnsport_rec.destination_l.city, trnsport_rec.type_mode, trnsport_rec.vehicle)
+                                data += '<tr>'
+                                data += '<td>%s</td>'%(trnsport_rec.from_date or '')
+                                data += '<td>%s</td>'%(trnsport_rec.source_l.city or '')
+                                data += '<td>%s</td>'%(trnsport_rec.to_date or '')
+                                data += '<td>%s</td>'%(trnsport_rec.destination_l.city or '')
+                                tr_type = ''
+                                if trnsport_rec.type_mode == 'dispo':
+                                    tr_type = 'Disposal'
+                                else:
+                                    tr_type = 'Point to Point'
+                                data += '<td>%s</td>'%(tr_type or '')
+                                data += '<td>%s</td>'%(trnsport_rec.vehicle or '')
+                                data += '</tr>'
                             data += '</table><br/><br/>'
 
                     if case.extraction == True and case.ex_vendor_id:
                         if case.ex_vendor_id.email == vender_email:
-                            data += '<table border=2 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Extraction Detail</b></font></td></tr><tr><td><b>Days</b></td><td><b>Date</b></td><td><b>City</b></td><td><b>Discription</b></td></tr>'
+                            vender_name = case.tc_vendor_id.name
+                            data += '<table border=1 width="100%"><tr><td bgcolor="#03578D" colspan=7><font color="white"><b>Excursion Detail</b></font></td></tr><tr><td><b>Days</b></td><td><b>Date</b></td><td><b>City</b></td><td><b>Discription</b></td></tr>'
                             for ext_rec in case.line_ids:
-                                data += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>'%(ext_rec.name,ext_rec.to_date,ext_rec.city.city,ext_rec.city_description)
+                                data += '<tr>'
+                                data += '<td>%s</td>'%(ext_rec.name or '')
+                                data += '<td>%s</td>'%(ext_rec.to_date or '')
+                                data += '<td>%s</td>'%(ext_rec.city.city or '')
+                                data += '<td>%s</td>'%(ext_rec.city_description or '')
+                                data += '</tr>'
                             data += '</table><br/><br/>'
 
                     mail_obj=self.pool.get('mail.mail')
@@ -353,20 +403,18 @@ class tour_send_query(osv.osv_memory):
                     mail_data={
                        'email_from':email_sender_rec.smtp_user,
                        'email_to':vender_email,
-                       'subject':'Request for Quotation',
-                       'body_html':'<div><p>Dear,</p> </br>'
+                       'subject':"%s | %s"%(str(case.name),str(case.customer_id.name)),
+                       'body_html':'<div><p>Dear %s,</p> </br>'
                                     '<p>Greetings From Shree Salasar Holidays</p>'
                                     '<p>Require Quotation for below described details</p>'
                                     '<p>%s</p>'
                                     '<p>Best Regards<br/>'
                                    'Shree Salasar Holidays<br/>'
                                    'Phone : +0261-4021666, +91 9998030666,<br/></p>'
-                                   %(data)
+                                   %(vender_name,data),
                     }
-                    print "--------",mail_data
                     mail_id = mail_obj.create(cr, uid, mail_data, context)
                     mail_obj.send(cr, uid, mail_id, context)
-                    print "mail send ------>>>>>>>>>"
 
                 # for tour_query in case_obj.browse(cr, uid, active_id, context=context):
                 #     print "========>>>>>>case",tour_query.name
@@ -435,7 +483,6 @@ class tour_send_query(osv.osv_memory):
     #
     #         return {'type': 'ir.actions.act_window_close'}
 
-
 # _defaults = {
 #         'employee_id': _selectPartner,
 #     }
@@ -448,7 +495,6 @@ class tour_query_hotel(osv.osv_memory):
         'hotel_ids': fields.many2one('tour.hotel', 'Hotel'),
         'vender_ids': fields.many2many('tour.hotel.vender', 'vendor_rel', 'user_id', 'wizard_id',
                                        string='Vendor Detail')
-
     }
 
     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False, context=None):

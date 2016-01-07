@@ -551,7 +551,11 @@
                             </group>
                             <group>
                                 <!--field name="phone"   string ="Contact No" placeholder="e.g. +32.81.81.37.00"/-->
-                                <field name="mobile" required="1"/>
+                                <label for="address_format" string="Mobile"/>
+                                <div class="address_format">
+                                    <field name='isd_code' placeholder="ISD" style="width: 20%%"/>
+                                    <field name="mobile" required="1" style="width: 80%%"/>
+                                </div>
                                 <field name="fax"/>
                                 <field name="user_ids" invisible="1"/>
                                 <field name="email" widget="email"
@@ -1177,15 +1181,11 @@
                         <group>
                             <group>
                                 <field name="customer_id"/>
-                                <field name="tour_type"
-                                       on_change="onchange_tour_type(tour_type)"/>
-                                <field name="emp_id"/>
-                                <field name="company_id"/>
+                                <field name="tour_type"/>
+                                <field name="emp_id" readonly="1"/>
+                                <field name="company_id" readonly="1"/>
                                 <field name="days"/>
                                 <field name="to_date"/>
-                                <field name="adult_no" class="oe_inline"/>
-                                <field name="infants"/>
-                                <field name="extra_no" class="oe_inline"/>
                             </group>
                             <group>
                                 <field name="ticket"/>
@@ -1197,27 +1197,39 @@
                                 <field name="passport"/>
                             </group>
                         </group>
-                        <group colspan="4" col="4">
-                            <field name="cwb_no" class="oe_inline"/>
-                            <field name="cw_no"/>
-                                <field name="child_with_bed_ids">
-                                    <tree string="CWB Ages" editable="bottom" create="false" delete="false">
-                                        <field name="name" readonly="1"/>
-                                        <field name="age"/>
-                                    </tree>
-                                </field>
-                                <field name="child_no_bed_ids">
-                                    <tree string="CNB Ages" editable="bottom" create="false" delete="false">
-                                        <field name="name" readonly="1"/>
-                                        <field name="age"/>
-                                    </tree>
-                                </field>
-                        </group>
                         <group>
-                            <field name="state_id" widget="many2many_tags" string="State"/>
+                            <field name="country_id" string="Country"/>
+                            <field name="state_id" widget="many2many_tags" string="State" domain="[('country_id','=',country_id)]"/>
                             <field name="location_id" string="Destination" widget="many2many_tags" context="{'state_id':state_id}"/>
                         </group>
                         <notebook>
+                            <page string="Members Details">
+                                <group>
+                                    <group>
+                                        <field name="adult_no" class="oe_inline"/>
+                                        <field name="infants"/>
+                                    </group>
+                                    <group>
+                                        <field name="extra_no" class="oe_inline"/>
+                                    </group>
+                                    <group colspan="4" col="4">
+                                        <field name="cwb_no" class="oe_inline"/>
+                                        <field name="cw_no"/>
+                                        <field name="child_with_bed_ids">
+                                            <tree string="CWB Ages" editable="bottom" create="false" delete="false">
+                                                <field name="name" readonly="1"/>
+                                                <field name="age"/>
+                                            </tree>
+                                        </field>
+                                        <field name="child_no_bed_ids">
+                                            <tree string="CNB Ages" editable="bottom" create="false" delete="false">
+                                                <field name="name" readonly="1"/>
+                                                <field name="age"/>
+                                            </tree>
+                                        </field>
+                                    </group>
+                                </group>
+                            </page>
                             <page string="Ticket Detail"
                                   attrs="{'invisible':[('ticket','=',False)]}">
                                 <group>

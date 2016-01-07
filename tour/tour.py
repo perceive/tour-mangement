@@ -2,8 +2,11 @@ from datetime import datetime
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from openerp import workflow
+from openerp.exceptions import except_orm
 from openerp import fields, models, api, exceptions, _
 from openerp.osv import osv
+import re
+
 class family_member_rel(models.Model):
     """Travel"""
     _name = 'family.member.rel'
@@ -193,6 +196,7 @@ class res_partner(models.Model):
 
     _inherit = 'res.partner'
 
+
     dob= fields.Date('Date of Birth ',)
     dan= fields.Date('Date of Anniviersy ', )
     ref_type= fields.Selection([ ('walking','Walking'), ('referred','Referred'), ],'Type')
@@ -202,6 +206,7 @@ class res_partner(models.Model):
     p_issue_date = fields.Datetime('Passport Issue Date ')
     p_exp_date = fields.Datetime('Passport expire Date ')
     p_issue_place = fields.Datetime('Passport Issue place ')
+    isd_code = fields.Char()
     city_ids = fields.Many2many(
         'res.better.zip',
         string='Locations',
@@ -213,29 +218,33 @@ class res_partner(models.Model):
     ]
 
     @api.model
+    def ValidateEmail(self, email):
+        if re.match("^.+\\@(\\[?)[a-zA-Z0-9\\-\\.]+\\.([a-zA-Z]{2,3}|[0-9]{1,3})(\\]?)$", email) != None:
+            return True
+        else:
+            raise except_orm(_('Warning!'),
+                    _("Please Enter Valid Email Address : (%s)") % (email,))
+
+    @api.model
     def create(self,vals):
         res = super(res_partner,self).create(vals)
-        name = res.name
-        res.name = name.title()
+        res.name = res.name.title()
+        email = vals.get('email',False)
+        if email:
+            self.ValidateEmail(vals['email'])
         return res
-#     _columns = {
-#                 'dob': fields.datetime('Date of Birth ', ),
-#                 'dan': fields.datetime('Date Anniveaty',),
-#                 'ref_type': fields.selection([ ('walking','Walking'), ('existing','Existing'), ],'Type'),
-#                 'ref_partner_id': fields.many2one('res.partner', 'Refer by Existing Customer'),
-#                 'line_ids': fields.one2many('family.memeber', 'partner_id', 'Family Member', ),
-#                 'p_no': fields.char('Passport No',)      ,            
-#                 'p_issue_date': fields.datetime('Passport Issue Date '),}
-               
-#                 'city_ids': fields.many2many(
-#         'res.better.zip',
-#         string='Locations',
-#         help='Destination cities of travel.',
-#     )
-         
-         
-#         
-#         }    
+
+    @api.multi
+    def write(self,vals):
+        if 'name' in vals and vals['name']:
+            vals['name'] = vals['name'].title()
+
+        if 'email' in vals and vals['email']:
+            self.ValidateEmail(vals['email'])
+
+        res = super(res_partner, self).write(vals)
+        return res
+
 
 class tour_package_line(models.Model):
     _name ='tour.package.line'
@@ -374,6 +383,7 @@ class tour_ticket(models.Model):
         string='Locations',
         help='Destination cities of travel.',
     )
+
     def _get_dest(self, cr, uid, context=None):
         res = self.search(cr, uid, [],limit=1,order='id desc',context=context)
         if res:
@@ -384,7 +394,8 @@ class tour_ticket(models.Model):
     _defaults = {      
   'name': lambda x, y, z, c: x.pool.get('ir.sequence').get(y, z, 'tour.ticket') or '/',
   'source':_get_dest
-  }     
+  }
+
     def default_get(self, cr, user, fields_list, context=None):
         """
         Returns default values for fields
@@ -426,8 +437,6 @@ class tour_ticket(models.Model):
 
         return {'value': {}}
 
-         
-    
 class tour_transport_line(models.Model):
     _name ='tour.transport.line'
     _description='Transport line'   
@@ -490,8 +499,11 @@ class tour_transport(models.Model):
  
 
 class tour_hotel_all(models.Model):
+
     _name = "tour.hotel.all"
+
     _rec_name = 'hotel_id'
+
     check_in=fields.Date('Check IN')
     check_out=fields.Date('Check OUT')
     tour_id =fields.Many2one('tour.query','Tour')
@@ -520,6 +532,10 @@ class tour_hotel_all(models.Model):
                        'message' : warn_msg
                     }
         return {'value': res, 'warning': warning}
+
+    # @api.v7
+    # def default_get(self,cr,uid,id,context):
+    #     print "==========>>>>>>>"
 
     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False,vendor=False,diret_hotel=False, context=None):
         res = {}
@@ -605,6 +621,7 @@ class tour_query(models.Model):
         'Customer', required=True,
         help="Name of Passenger."
     )
+
     tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True, track_visibility='onchange')
     ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor', track_visibility='onchange')
     tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor', track_visibility='onchange')
@@ -630,28 +647,10 @@ class tour_query(models.Model):
     vendor = fields.Boolean('Hotel Vendor', track_visibility='onchange',)
     direct = fields.Boolean('Direct Hotel', track_visibility='onchange')
     company_id = fields.Many2one('res.company')
-    hotel_id = fields.Many2one(
-        'tour.hotel',
-        'Hotel',
-        track_visibility='onchange',
-    )
-
-    visa_id = fields.Many2one(
-        'tour.visa',
-        'Visa',
-        track_visibility='onchange',
-    )
-    transport_ids = fields.One2many(
-         'tour.transport','query',
-         'Transport',
-        track_visibility='onchange',
-     )
-
-    sale_id = fields.Many2one(
-        'sale.order',
-        'Sale Order',
-        track_visibility='onchange',
-    )
+    hotel_id = fields.Many2one('tour.hotel', 'Hotel', track_visibility='onchange')
+    visa_id = fields.Many2one('tour.visa', 'Visa', track_visibility='onchange')
+    transport_ids = fields.One2many('tour.transport','query', 'Transport', track_visibility='onchange',)
+    sale_id = fields.Many2one('sale.order','Sale Order', track_visibility='onchange',)
 
 #     ticket_id = fields.One2many(
 #         'tour.ticket',
@@ -661,18 +660,10 @@ class tour_query(models.Model):
 #         'tour.insurance',
 #         'Insurance',
 #     )
-    passport_id = fields.Many2one(
-        'tour.passport',
-        'Passport',
-        track_visibility='onchange',
-    )
+    passport_id = fields.Many2one('tour.passport', 'Passport', track_visibility='onchange',)
     vender_ids=fields.Many2many('tour.hotel.vender', 'vendor_test_rel', 'hote_id', 'wizard_id',string='Vendor Detail', track_visibility='onchange')
-   # vender_ids':fields.many2many('tour.hotel.vender','vendor_rel', 'user_id', 'wizard_id',string='Vendor Detail')
     invoice=fields.Many2many('account.invoice','test_rel','test_2id','id2_test','Last invoice', track_visibility='onchange')
-    #'invoice': fields.many2many('account.invoice', 'account_user_rel', 'user_id', 'wizard_id', 'Last invoice'),
-   # extraction_id = fields.One2many('tour.extraction', 'query',string='E,xcursion')
     emp_id = fields.Many2one('hr.employee',string='Employee', track_visibility='onchange')
-
     days= fields.Integer('No of Night',required=True, track_visibility='onchange')
     line_ids=fields.One2many('tour.query.line', 'query', 'Excursion', track_visibility='onchange')
     ticket_emp_id = fields.Many2one('hr.employee',string='Employee', track_visibility='onchange')
@@ -683,14 +674,32 @@ class tour_query(models.Model):
             ('draft', 'Not Confirmed'),
             ('done', 'Confirmed'),
             ('cancel','Cancel') ], track_visibility='onchange',)
-
     one_way = fields.Boolean('One Way')
     round_trip = fields.Boolean('Round Trip')
     multicity = fields.Boolean('Multicity')
+    country_id = fields.Many2one('res.country')
+
+    @api.onchange('tour_type')
+    def tour_type_onchange(self):
+        """
+        this method set country as india if tour type is Domestic
+        :return:
+        """
+        if self.tour_type == 'domestic':
+            country_rec = self.env['res.country'].search([('code','=','IN')],limit=1)
+            print "set country",country_rec
+            if country_rec.id:
+                self.country_id = country_rec.id
+        else:
+            self.country_id = ""
 
     @api.onchange('ticket')
     def onchange_ticket(self):
         self.one_way = True
+
+    # @api.v7
+    # def default_get(self):
+    #     print "==========>>>>>>>"
 
     @api.onchange('one_way')
     def onchange_one_way(self):
@@ -701,7 +710,6 @@ class tour_query(models.Model):
         lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
         self.ticket_ids_one = lst_one_way
 
-
     @api.onchange('round_trip')
     def onchange_round_trip(self):
         lst_one_way = []
@@ -710,7 +718,6 @@ class tour_query(models.Model):
             self.multicity = False
         lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
         self.ticket_ids_round = lst_one_way
-
 
     @api.onchange('multicity')
     def onchange_multicity(self):
@@ -778,9 +785,6 @@ class tour_query(models.Model):
         #     location_obj = self.env['res.better.zip']
         #     name = self.location_id.name_search([])
 
-
-
-
 #     def onchange_hotel_ids(self, cr, uid, ids, hotel_ids=False, context=None):
 #         res = {}
 #         case_obj = self.pool.get('tour.query')
@@ -839,7 +843,6 @@ class tour_query(models.Model):
             else:
                pay_term = False
 
-
             lines=[]
             inv_all=[]
             states = ['confirmed', 'done', 'exception']
@@ -892,9 +895,10 @@ class tour_query(models.Model):
             return {'type': 'ir.actions.act_window_close'}
 
     _defaults = {
-      'tour_type':'domestic',
-     'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
-      }
+            'tour_type':'domestic',
+            'emp_id':lambda self, cr, uid, ctx=None: uid,
+            'company_id': lambda self, cr, uid, obj, ctx=None: self.pool['res.users'].browse(cr, uid, uid).company_id.id,
+        }
 
     def action_button_confirm(self, cr, uid, ids, context=None):
         self.write(cr, uid, ids, {'state':'done'})
@@ -945,14 +949,14 @@ class tour_query(models.Model):
                 trac_obj.create(cr,uid,trc_vals,context=context)
         return new_id
 
-    def onchange_tour_type(self, cr, uid, ids, tour_type, context={}):
-        res = {'value': {'name': ''}}
-#         if tour_type:
-#             if tour_type == 'domestic':
-#                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
-#             elif tour_type == 'international':
-#                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
-        return res
+#     def onchange_tour_type(self, cr, uid, ids, tour_type, context={}):
+#         res = {'value': {'name': ''}}
+# #         if tour_type:
+# #             if tour_type == 'domestic':
+# #                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
+# #             elif tour_type == 'international':
+# #                 res['value']['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
+#         return res
 
     def write(self, cr, uid, ids, vals, context=None):
         if ids:
