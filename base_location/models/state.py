@@ -28,3 +28,7 @@ class ResCountryState(models.Model):
     _inherit = 'res.country.state'
 
     better_zip_ids = fields.One2many('res.better.zip', 'state_id', 'Cities')
+
+    _sql_constraints = [
+        ('state_uniq_constaints','unique(name)', 'The State must be unique !')
+    ]

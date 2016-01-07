@@ -146,8 +146,32 @@ class tour_hotel(models.Model):
             self.zip = self.zip_id.name
             self.city = self.zip_id.city
             self.state_id = self.zip_id.state_id
-            self.country_id = self.zip_id.country_id   
-              
+            self.country_id = self.zip_id.country_id
+
+    # def default_get(self, cr, user, fields_list, context=None):
+    #     """
+    #     Returns default values for fields
+    #     @param fields_list: list of fields, for which default values are required to be read
+    #     @param context: context arguments, like lang, time zone
+    #
+    #     @return: Returns a dict that contains default values for fields
+    #     """
+    #     if context is None:
+    #         context = {}
+    #     values = super(tour_ticket, self).default_get(cr, user, fields_list, context=context)
+    #     if context.get('to_date'):
+    #         values.update({'ticket_date': context.get('to_date')})
+    #     return values
+
+
+    @api.v7
+    def name_search(self, cr, user, name, args=None, operator='ilike', context=None, limit=100):
+        # if context.has_key('tour_ids'):
+        #     print '>>>>>>>>>'
+        #     return self.name_get(cr, user, context.get('tour_ids'), context=context)
+        ids = self.search(cr, user, [],limit=limit, context=context)
+        return self.name_get(cr, user, ids, context=context)
+
 class tour_hotel_vender_line(models.Model):
     _name = 'tour.hotel.vender.line'
     _rec_name="id"
@@ -212,6 +236,20 @@ class res_partner(models.Model):
         string='Locations',
         help='Destination cities of travel.',
     )
+
+    @api.multi
+    def is_phone(self):
+        pattern ="^[0-9]{10}$"
+        for data in self:
+            if re.match(pattern, data.mobile):
+                return True
+            else:
+                return False
+        return {}
+
+    _constraints = [
+        (is_phone, 'Invalid Mobile Number', ['mobile']),
+    ]
 
     _sql_constraints = [
         ('mobile_uniq_constaints','unique(mobile)', 'The mobile number must be unique !')
@@ -383,7 +421,6 @@ class tour_ticket(models.Model):
         string='Locations',
         help='Destination cities of travel.',
     )
-
     def _get_dest(self, cr, uid, context=None):
         res = self.search(cr, uid, [],limit=1,order='id desc',context=context)
         if res:
@@ -407,21 +444,29 @@ class tour_ticket(models.Model):
         if context is None:
             context = {}
         values = super(tour_ticket, self).default_get(cr, user, fields_list, context=context)
+        if context.get('to_date'):
+            values.update({'ticket_date': context.get('to_date')})
+        if context.get('ticket_ids_multi'):
+            for ticket_line in context.get('ticket_ids_multi'):
+                if ticket_line[2]:
+                    destination = ticket_line[2].get('destination')
+                    values.update({'source': destination})
         return values
- 
+
 #     
     def write(self, cr, uid, ids, vals, context=None):
-       
+
         if vals.get('oneway') and  vals.get('twoway'):
-            raise osv.except_osv(_('Error!'), _('Select Only One mode!'))      
+            raise osv.except_osv(_('Error!'), _('Select Only One mode!'))
         return  super(tour_ticket, self).write(cr, uid, ids, vals, context=context)
     
     
      
 
-    def create(self, cr, uid, vals, context=None):
-        res_id = super(tour_ticket, self).create(cr, uid, vals, context=context)
-        return res_id     
+    # def create(self, cr, uid, vals, context=None):
+    #     res_id = super(tour_ticket, self).create(cr, uid, vals, context=context)
+    #     print '::::::::::::',res_id
+    #     return res_id
     
      
 #         data=self.browse(cr,user,list_ids,context=context)
@@ -493,10 +538,10 @@ class tour_transport(models.Model):
 #     )    
 #          
 #      
-    _defaults = {      
-  'name': lambda x, y, z, c: x.pool.get('ir.sequence').get(y, z, 'tour.tran') or '/',
-  }       
- 
+#     _defaults = {
+#   'name': lambda x, y, z, c: x.pool.get('ir.sequence').get(y, z, 'tour.tran') or '/',
+#   }
+
 
 class tour_hotel_all(models.Model):
 
@@ -506,15 +551,54 @@ class tour_hotel_all(models.Model):
 
     check_in=fields.Date('Check IN')
     check_out=fields.Date('Check OUT')
+    no_of_nights = fields.Integer('No of Nights')
     tour_id =fields.Many2one('tour.query','Tour')
     hotel_id  = fields.Many2one('tour.hotel', 'Hotel', required=True)
     mean_id=fields.Many2one('tour.hotel.meal','Meal Plan')
     vender_ids = fields.Many2many('tour.hotel.vender',id1='line_id', id2='val_id',string='Vendor Detail')
     vender_id = fields.Many2many('tour.hotel.vender.line',id1='line_id1', id2='val_id',string='Vendor line')
     vendor = fields.Boolean('Vendor')
+    query =fields.Many2one('tour.query','Tour')
     send_mail = fields.Boolean('Send Mail')
     diret_hotel = fields.Boolean('Direct')
     invoice_ids = fields.Many2many('account.invoice',id1='line_i', id2='inv_id',string='Invoice')
+    category = fields.Char(staring= 'Category')
+
+    @api.onchange('no_of_nights')
+    def onchange_no_of_nights(self):
+        if self.check_in:
+            Date = datetime.strptime(self.check_in, "%Y-%m-%d")
+            check_out = Date + timedelta(self.no_of_nights)
+            if self.no_of_nights:
+                self.check_out = check_out
+
+
+    def default_get(self, cr, user, fields_list, context=None):
+        """
+        Returns default values for fields
+        @param fields_list: list of fields, for which default values are required to be read
+        @param context: context arguments, like lang, time zone
+
+        @return: Returns a dict that contains default values for fields
+        """
+        if context is None:
+            context = {}
+        values = super(tour_hotel_all, self).default_get(cr, user, fields_list, context=context)
+        if 'to_date' in context and context.get('to_date'):
+            values.update({'check_in': context.get('to_date')})
+        # if 'vendor_id' in context and context.get('vendor_id'):
+        #     values.update({'vender_ids': [(4, context.get('vendor_id'))]})
+        if context.get('all_ids'):
+            for all_ids in context.get('all_ids'):
+                if all_ids[2]:
+                    check_out = all_ids[2].get('check_out')
+                    values.update({'check_in': check_out})
+        # if 'location_id' in context and context.get('location_id'):
+        #     tour_ids = self.pool.get('tour.hotel').search(cr, user, [('zip_id','in',context.get('location_id')[0][2])], context=context)
+        #     if tour_ids:
+        #         context.update({'tour_ids': tour_ids})
+        #         self.pool.get('tour.hotel').name_search(cr, user, name='', context=context)
+        return values
 
     def onchange_checkin(self, cr, uid, ids, check_in=False,hotel_id=False):
         res={}
@@ -556,7 +640,7 @@ class tour_hotel_all(models.Model):
                     v.append(data.vendor_id.id)
                 vender_all=acc_obj.search(cr,uid,[('vendor_id','in',v)])    
                 res['value'] = {'vender_ids': v, 'invoice_ids': vender_all}        
-        if hotel_ids  :      
+        if hotel_ids:
             line_ids=vendor_obje_line.search(cr,uid,[('hotel_id','=',hotel_ids)])
             inv_all=acc_obj.search(cr,uid,[('hotel_id','=',hotel_ids)],limit=1, )  
             if line_ids:
@@ -574,6 +658,7 @@ class tour_hotel_all(models.Model):
         else:
                res['value'] = {'vender_ids': [], 'invoice_ids': []}            
         return res
+
 
 class tour_query_line(models.Model):
 
@@ -623,6 +708,7 @@ class tour_query(models.Model):
     )
 
     tour_type= fields.Selection([('domestic','Domestic'),('international','International')],'Tour type', required=True, track_visibility='onchange')
+    vendor_id=fields.Many2one('tour.hotel.vender', 'Hotel Vendor', track_visibility='onchange')
     ex_vendor_id=fields.Many2one('tour.hotel.vender', 'Excursion Vendor', track_visibility='onchange')
     tc_vendor_id=fields.Many2one('tour.hotel.vender', 'Vendor', track_visibility='onchange')
     tr_vendor_id=fields.Many2one('tour.hotel.vender', ' Transportation Vendor', track_visibility='onchange')
@@ -631,8 +717,8 @@ class tour_query(models.Model):
     adult_no = fields.Integer('Number of Adult', track_visibility='onchange')
     cwb_no = fields.Integer('CWB', track_visibility='onchange')
     cw_no = fields.Integer('CNB', track_visibility='onchange')
-    child_with_bed_ids = fields.One2many('child.with.bed', 'tour_id', 'Age')
-    child_no_bed_ids = fields.One2many('child.without.bed', 'tour_id', 'Age')
+    child_with_bed_ids = fields.One2many('child.with.bed', 'tour_id', 'CWB Age')
+    child_no_bed_ids = fields.One2many('child.without.bed', 'tour_id', 'CNB Age')
     to_date = fields.Date('Start Date',required=True, track_visibility='onchange')
     extra_no = fields.Integer('Extra Adult', track_visibility='onchange')
     infants = fields.Integer('Number of infants', track_visibility='onchange')
@@ -651,6 +737,11 @@ class tour_query(models.Model):
     visa_id = fields.Many2one('tour.visa', 'Visa', track_visibility='onchange')
     transport_ids = fields.One2many('tour.transport','query', 'Transport', track_visibility='onchange',)
     sale_id = fields.Many2one('sale.order','Sale Order', track_visibility='onchange',)
+    # occupancy_ids = fields.One2many(
+    #      'occupancy.occupancy','tour_id',
+    #      'Occupancy',
+    #     track_visibility='onchange',
+    #  )
 
 #     ticket_id = fields.One2many(
 #         'tour.ticket',
@@ -692,10 +783,206 @@ class tour_query(models.Model):
                 self.country_id = country_rec.id
         else:
             self.country_id = ""
+    # no_of_room = fields.Integer('No. of Rooms')
 
-    @api.onchange('ticket')
-    def onchange_ticket(self):
-        self.one_way = True
+
+    # @api.onchange('no_of_room', 'adult_no', 'extra_no')
+    # def onchange_no_of_room(self):
+    #     total = self.adult_no + self.extra_no
+    #     lst_age = []
+    #     if self.no_of_room == 1 and total == 1:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 1 and total == 2:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 1 and total == 3:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 1 and total == 4:
+    #         lst_age.append((0, 0, {'name':'Four Bed', 'room': 0.0}))
+    #     elif self.no_of_room == 1 and total > 4:
+    #         lst_age.append((0, 0, {'name':' ', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 2:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 3:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 4:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 5:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 6:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 7:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 2 and total == 8:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 3:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 4:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 5:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 6:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 7:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 8:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 9:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 10:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 11:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total == 12:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 3 and total > 12:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 4:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 5:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 6:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 7:
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 8:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 9:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 10:
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 11:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 12:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Double', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 13:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Single', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 14:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 15:
+    #         lst_age.append((0, 0, {'name':'Triple', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total == 16:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #     elif self.no_of_room == 4 and total > 16:
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':'Four', 'room': 0.0}))
+    #         lst_age.append((0, 0, {'name':' ', 'room': 0.0}))
+    #     self.occupancy_ids = lst_age
+
 
     # @api.v7
     # def default_get(self):
@@ -704,26 +991,29 @@ class tour_query(models.Model):
     @api.onchange('one_way')
     def onchange_one_way(self):
         lst_one_way = []
+        lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy', 'ticket_date': self.to_date}))
         if self.one_way == True:
             self.round_trip = False
             self.multicity = False
-        lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
-        self.ticket_ids_one = lst_one_way
+            self.ticket_ids_round = [(5, 0)]
+            self.ticket_ids_one = lst_one_way
 
     @api.onchange('round_trip')
     def onchange_round_trip(self):
-        lst_one_way = []
+        lst_two_way = []
+        lst_two_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy', 'ticket_date': self.to_date}))
         if self.round_trip == True:
             self.one_way = False
             self.multicity = False
-        lst_one_way.append((0, 0, {'mode_type':'air', 'ref_type': 'economy'}))
-        self.ticket_ids_round = lst_one_way
+            self.ticket_ids_one = [(5, 0)]
+            self.ticket_ids_round = lst_two_way
 
     @api.onchange('multicity')
     def onchange_multicity(self):
         if self.multicity == True:
             self.round_trip = False
             self.one_way = False
+        self.ticket_ids_multi = [(5, 0)]
 
     def copy(self, cr, uid, id, default=None, context=None):
         default = default or {}
@@ -737,6 +1027,7 @@ class tour_query(models.Model):
     @api.onchange('cwb_no')
     def onchange_cwb_no(self):
         lst_age = []
+        self.child_with_bed_ids = [(5, 0)]
         for cwb in range(self.cwb_no):
             lst_age.append((0, 0, {'name': 'Child'+str(cwb+1), 'age': ''}))
         self.child_with_bed_ids = lst_age
@@ -744,6 +1035,7 @@ class tour_query(models.Model):
     @api.onchange('cw_no')
     def onchange_cb_no(self):
         lst_age = []
+        self.child_no_bed_ids = [(5, 0)]
         for cb in range(self.cw_no):
             lst_age.append((0, 0, {'name': 'Child'+str(cb+1), 'age': ''}))
         self.child_no_bed_ids = lst_age
@@ -908,45 +1200,84 @@ class tour_query(models.Model):
         self.write(cr, uid, ids, {'state':'cancel'})
         return True
 
+
+    @api.onchange('trnsport')
+    def onchange_transport(self):
+        lst_trc = []
+        if self.days > 0:
+            self.transport_ids = [(5, 0)]
+            for day in range (self.days+1):
+                if day==0 and self.to_date:
+                    to_date= self.to_date
+                    next_date = datetime.strptime(self.to_date, '%Y-%m-%d') + relativedelta(days=day+1)
+                else :
+                    to_date = next_date
+                    next_date =(datetime.strptime(self.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
+                name = self.env['ir.sequence'].get('tour.tran') or '/'
+                lst_trc.append((0, 0, {'from_date':to_date,'to_date':next_date, 'query': self._ids, 'name': name}))
+            if self.trnsport:
+                self.transport_ids = lst_trc
+
+    @api.onchange('extraction')
+    def onchange_extraction(self):
+
+        lst_ext = []
+        if self.days > 0:
+            self.line_ids = [(5, 0)]
+            for day in range (self.days+1):
+                name2='Day' +str(day+1)
+                if day==0 and self.to_date:
+                    to_date=self.to_date
+                    next_date = datetime.strptime(self.to_date, '%Y-%m-%d') + relativedelta(days=day+1)
+                else :
+                    to_date = next_date
+                    next_date =(datetime.strptime(self.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
+                lst_ext.append((0, 0, {'name':name2,'end_date':next_date,'to_date':to_date}))
+            if self.extraction:
+                self.line_ids = lst_ext
+
+
     def create(self, cr, uid, vals, context=None):
         if ('name' not in vals) or (vals.get('name') in ('/', False)):
             if  vals.get('tour_type') == 'domestic':
                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.dom') or '/'
             elif vals.get('tour_type') == 'international':
                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
-
-        # new_id = super(tour_query, self).create(cr, uid, vals, context=context)
-        context = context or {}
-
         new_id = super(tour_query, self).create(cr, uid, vals, context=context)
-        line_obj=self.pool.get('tour.query.line')
-        # tr_obj=self.pool.get('tour.ticket')
-        trac_obj=self.pool.get('tour.transport')
-        vals1={}
-        tr_vals2={}
-        trc_vals={}
+        # context = context or {}
 
-        if context is None:
-            context = {}
-        if vals.get('days')>0:
-            for day in range (vals.get('days')+1):
-                name2='Day' +str((day+1))
-                if day==0:
-                    to_date=vals.get('to_date')
-                    next_date = datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1)
-                    #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
-                else :
-                    to_date = next_date
-                    next_date =(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1))
+        #Move this code on onchange of Exursion and transport
 
-                vals1.update({'name':name2,'query':new_id,'end_date':next_date,'to_date':to_date})
 
-                # tr_vals2.update({'query':new_id,'ticket_date':to_date})
-                trc_vals.update({'query':new_id,'from_date':to_date,'to_date':next_date})
+        # # new_id = super(tour_query, self).create(cr, uid, vals, context=context)
+        # line_obj=self.pool.get('tour.query.line')
+        # # tr_obj=self.pool.get('tour.ticket')
+        # trac_obj=self.pool.get('tour.transport')
+        # vals1={}
+        # tr_vals2={}
+        # trc_vals={}
 
-                line_obj.create(cr,uid,vals1,context=context)
-                # tr_obj.create(cr,uid,tr_vals2,context=context)
-                trac_obj.create(cr,uid,trc_vals,context=context)
+        # if context is None:
+        #     context = {}
+        # if vals.get('days')>0:
+        #     for day in range (vals.get('days')+1):
+        #         name2='Day' +str((day+1))
+        #         if day==0:
+        #             to_date=vals.get('to_date')
+        #             next_date = datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1)
+        #             #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
+        #         else :
+        #             to_date = next_date
+        #             next_date =(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=day+1))
+        #
+        #         vals1.update({'name':name2,'query':new_id,'end_date':next_date,'to_date':to_date})
+        #
+        #         # tr_vals2.update({'query':new_id,'ticket_date':to_date})
+        #         trc_vals.update({'query':new_id,'from_date':to_date,'to_date':next_date})
+        #
+        #         line_obj.create(cr,uid,vals1,context=context)
+        #         # tr_obj.create(cr,uid,tr_vals2,context=context)
+        #         trac_obj.create(cr,uid,trc_vals,context=context)
         return new_id
 
 #     def onchange_tour_type(self, cr, uid, ids, tour_type, context={}):
@@ -966,20 +1297,20 @@ class tour_query(models.Model):
             elif vals.get('tour_type') == 'international':
                 vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'tour.int') or '/'
 
-            line_obj=self.pool.get('tour.query.line')
-            if vals.get('days') and not self.browse(cr,uid,ids[0],context=context).line_ids:
-                vals1={}
-                for day in range (vals.get('days')):
-                    name2='Day' +str((day+1))
-                    if day==0:
-                        to_date=data.to_date
-                        next_date = to_date
-                        #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
-                    else :
-                        to_date = (datetime.strptime(data.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
-                        next_date =to_date
-                    vals1.update({'name':name2,'query':ids[0],'end_date':next_date,'to_date':to_date})
-                    line_obj.create(cr,uid,vals1,context=context)
+            # line_obj=self.pool.get('tour.query.line')
+            # if vals.get('days') and not self.browse(cr,uid,ids[0],context=context).line_ids:
+            #     vals1={}
+            #     for day in range (vals.get('days')):
+            #         name2='Day' +str((day+1))
+            #         if day==0:
+            #             to_date=data.to_date
+            #             next_date = to_date
+            #             #(datetime.strptime(vals.get('to_date'), '%Y-%m-%d') + relativedelta(days=1))
+            #         else :
+            #             to_date = (datetime.strptime(data.to_date, '%Y-%m-%d') + relativedelta(days=day+1))
+            #             next_date =to_date
+            #         vals1.update({'name':name2,'query':ids[0],'end_date':next_date,'to_date':to_date})
+            #         line_obj.create(cr,uid,vals1,context=context)
         return super(tour_query, self).write(cr, uid, ids, vals, context=context)
 
 class account_invoice(models.Model):
@@ -1031,6 +1362,14 @@ class child_without_bed(models.Model):
     name = fields.Char('Name')
     age = fields.Char('Age')
     tour_id = fields.Many2one('Tour.query','Tour')
+
+# class occupancy_occupancy(models.Model):
+#
+#     _name = 'occupancy.occupancy'
+#
+#     name = fields.Char('Name')
+#     room = fields.Integer('Room')
+#     tour_id = fields.Many2one('Tour.query','Tour')
 
 # class email_template(models.Model):
 #     _inherit ='email.template' 

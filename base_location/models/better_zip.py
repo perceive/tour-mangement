@@ -38,6 +38,7 @@ class BetterZip(models.Model):
     state_id = fields.Many2one('res.country.state', 'State')
     country_id = fields.Many2one('res.country', 'Country')
     day_description = fields.One2many('day.description','res_better_zip_id',string='Description')
+    # hotel_ids = fields.One2many('tour.hotel', 'zip_id', 'Hotels')
 
     @api.one
     @api.depends(
@@ -47,7 +48,6 @@ class BetterZip(models.Model):
         'country_id',
         )
     def _get_display_name(self):
-        print "====================================================================="
 #         if self.name:
 #             name = [self.name, self.city]
 #         else:   
@@ -74,22 +74,35 @@ class BetterZip(models.Model):
     @api.v7
     def name_search(self, cr, user, name, args=None, operator='ilike', context=None, limit=100):
         if context.has_key("state_id"):
-            print "context get state id",context.get('state_id')[0][2]
             ids = self.search(cr, user, [('state_id','in',context.get('state_id')[0][2])],limit=limit, context=context)
             return self.name_get(cr, user, ids, context=context)
         if context.has_key('query'):
             tour_query_obj = self.pool.get('tour.query')
             tour_query = tour_query_obj.browse(cr,user,context.get('query'),context)
-            location_lst = []
-            # def_get = tour_query.default_get(cr, user, fields, context=None)
-            # print "\n\n\ndefault get ::::::::::::def_get",def_get
-            for i in tour_query.location_id:
-                location_lst.append(i.id)
-            if len(location_lst) > 0:
-                ids = self.search(cr, user, [('id','in',location_lst)],limit=limit, context=context)
-                return self.name_get(cr, user, ids, context=context)
+            if tour_query:
+                if len(tour_query.all_ids) > 0 and context.has_key('to_date'):
+                    city_list = []
+                    for all_rec in tour_query.all_ids:
+                        if all_rec.check_in >= context.get('to_date') <= all_rec.check_out:
+                            city_list.append(all_rec.hotel_id.zip_id.id)
+                    print '>>>>>>>>>.',city_list
+                    if len(city_list) > 0:
+                        print ':::::::::::',city_list
+                        ids = self.search(cr, user, [('id','in',city_list)],limit=limit, context=context)
+                        return self.name_get(cr, user, ids, context=context)
+                location_lst = []
+                if tour_query.location_id:
+                    for i in tour_query.location_id:
+                        location_lst.append(i.id)
+                    if len(location_lst) > 0:
+                        ids = self.search(cr, user, [('id','in',location_lst)],limit=limit, context=context)
+                        return self.name_get(cr, user, ids, context=context)
         ids = self.search(cr, user, [],limit=limit, context=context)
         return self.name_get(cr, user, ids, context=context)
+
+    _sql_constraints = [
+        ('city_uniq_constaints','unique(city)', 'The City must be unique !')
+    ]
 
     # @api.onchange('day_description')
     # def onchange_description(self):
@@ -107,6 +120,7 @@ class BetterZipLine(models.Model):
     days = fields.Char('Days')
     Description = fields.Char('Description')
     res_better_zip_id = fields.Many2one('res.better.zip')
+    image = fields.Binary('Image')
 
     # @api.model
     # def default_get(self,fields):

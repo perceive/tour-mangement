@@ -120,7 +120,25 @@ class tour_make_sale(osv.osv_memory):
                             'price_unit': make.v_amount,
                         }, context=context)
                         total_amt += make.v_amount
-                    if case.ticket_ids:
+                    if case.ticket_ids_one:
+                        line_obj.create(cr, uid, {
+                            'name': 'Ticket  Exp',
+                            'order_id': new_id,
+                            'product_uom_qty': 1,
+                            'price_unit': make.trc_amount,
+                            'vendor_id': case.tc_vendor_id.id,
+                        }, context=context)
+                        total_amt += make.trc_amount
+                    if case.ticket_ids_round:
+                        line_obj.create(cr, uid, {
+                            'name': 'Ticket  Exp',
+                            'order_id': new_id,
+                            'product_uom_qty': 1,
+                            'price_unit': make.trc_amount,
+                            'vendor_id': case.tc_vendor_id.id,
+                        }, context=context)
+                        total_amt += make.trc_amount
+                    if case.ticket_ids_multi:
                         line_obj.create(cr, uid, {
                             'name': 'Ticket  Exp',
                             'order_id': new_id,

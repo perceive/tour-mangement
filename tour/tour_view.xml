@@ -1195,6 +1195,12 @@
                                 <field name="visa_p"/>
                                 <field name="insuracne"/>
                                 <field name="passport"/>
+                                <!--<field name="occupancy_ids" attrs="{'invisible':['|',('no_of_room', '=', 0),('adult_no', '=', 0),('extra_no', '=', 0)]}">-->
+                                    <!--<tree string="Occupancy" editable="bottom" create="false">-->
+                                        <!--<field name="name"/>-->
+                                        <!--<field name="room"/>-->
+                                    <!--</tree>-->
+                                <!--</field>-->
                             </group>
                         </group>
                         <group>
@@ -1214,14 +1220,14 @@
                                     </group>
                                     <group colspan="4" col="4">
                                         <field name="cwb_no" class="oe_inline"/>
-                                        <field name="cw_no"/>
-                                        <field name="child_with_bed_ids">
+                                        <field name="child_with_bed_ids" attrs="{'invisible':[('cwb_no','=',0)]}">
                                             <tree string="CWB Ages" editable="bottom" create="false" delete="false">
                                                 <field name="name" readonly="1"/>
                                                 <field name="age"/>
                                             </tree>
                                         </field>
-                                        <field name="child_no_bed_ids">
+                                        <field name="cw_no"/>
+                                        <field name="child_no_bed_ids" attrs="{'invisible':[('cw_no','=',0)]}">
                                             <tree string="CNB Ages" editable="bottom" create="false" delete="false">
                                                 <field name="name" readonly="1"/>
                                                 <field name="age"/>
@@ -1244,7 +1250,8 @@
                                 <group>
                                     <field name="ticket_ids_one" nolabel="1"
                                            options="{'reload_on_button': true}"
-                                            attrs="{'invisible':[('one_way','!=',True)]}">
+                                            attrs="{'invisible':[('one_way','!=',True)]}"
+                                            >
                                         <tree editable="bottom" create="false">
                                             <field name="mode_type"/>
                                             <field name="source"/>
@@ -1256,7 +1263,8 @@
                                     </field>
                                     <field name="ticket_ids_round" nolabel="1"
                                            options="{'reload_on_button': true}"
-                                            attrs="{'invisible':[('round_trip','!=',True)]}">
+                                            attrs="{'invisible':[('round_trip','!=',True)]}"
+                                            >
                                         <tree editable="bottom" create="false">
                                             <field name="mode_type"/>
                                             <field name="source"/>
@@ -1269,7 +1277,8 @@
                                     </field>
                                     <field name="ticket_ids_multi" nolabel="1"
                                            options="{'reload_on_button': true}"
-                                            attrs="{'invisible':[('multicity','!=',True)]}">
+                                            attrs="{'invisible':[('multicity','!=',True)]}"
+                                            context="{'to_date': to_date, 'ticket_ids_multi': ticket_ids_multi}">
                                         <tree editable="bottom">
                                             <field name="mode_type"/>
                                             <field name="source"/>
@@ -1285,19 +1294,31 @@
 
                             <page string="Hotel detail"
                                   attrs="{'invisible':[('hotel','=',False)]}">
-                                <button string="Send Query"
-                                        name="%(action_tour_send)d"
-                                        type="action" class="oe_highlight"/>
+                                <group colspan="4" col="4">
+                                    <button string="Send Query"
+                                            name="%(action_tour_send)d"
+                                            type="action" class="oe_highlight"/>
+                                    <field name="vendor_id" invisible="1"/>
+                                </group>
                                 <group>
                                 </group>
-                                <field name="all_ids" widget="one2many_list">
+                                <field name="all_ids" widget="one2many_list"  context="{'all_ids': all_ids, 'to_date': to_date, 'vendor_id': vendor_id}">
+                                    <form string="Details s">
+                                        <group>
+                                            <field name="hotel_id"
+                                                   domain="[('hotel_id','=',hotel_id)]"/>
+                                        </group>
+                                    </form>
                                     <tree string="All Data" editable="bottom">
+                                        <field name="query" invisible="1"/>
                                         <field name="hotel_id"
-                                               on_change="onchange_hotel_ids(hotel_id)"/>
+                                               on_change="onchange_hotel_ids(hotel_id)" context="{'query': query}"/>
+                                        <field name="no_of_nights"/>
                                         <field name="check_in"
                                                on_change="onchange_checkin(check_in,hotel_id)"/>
                                         <field name="check_out"/>
                                         <field name="mean_id"/>
+                                        <field name="category"/>
                                         <field name="invoice_ids"
                                                widget="many2many_tags"
                                                domain="[('hotel_id', '=', hotel_id)]"
@@ -1361,7 +1382,7 @@
                                         <field name="query" invisible="1"/>
                                         <field name="to_date"
                                                on_change="onchange_date(to_date,end_date)"/>
-                                        <field name="city" context="{'query':query}"/>
+                                        <field name="city" context="{'query':query, 'to_date':to_date}"/>
                                         <field name="city_day" domain="[('res_better_zip_id','=',city)]" create="false"/>
                                         <field name="city_description"/>
                                         <!--<field name="price"/>-->
@@ -1596,7 +1617,7 @@
             <field name="name">tour.hotel.allform</field>
             <field name="model">tour.hotel.all</field>
             <field name="arch" type="xml">
-                <form string=">All Detail   Detail">
+                <form string="All Detail">
                     <group>
                         <field name="hotel_id"
                                on_change="onchange_hotel_ids(hotel_id)"/>
@@ -1607,6 +1628,36 @@
                 </form>
             </field>
         </record>
+
+        <!--<record id="occupancy_form_id" model="ir.ui.view">-->
+            <!--<field name="name">occupancy.form.id</field>-->
+            <!--<field name="model">occupancy.occupancy</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<form string="Occupancy Detail">-->
+                    <!--<group>-->
+                        <!--<field name="name"/>-->
+                        <!--<field name="room"/>-->
+                    <!--</group>-->
+                <!--</form>-->
+            <!--</field>-->
+        <!--</record>-->
+
+        <!--<record id="occupancy_tree_id" model="ir.ui.view">-->
+            <!--<field name="name">occupancy.tree.id</field>-->
+            <!--<field name="model">occupancy.occupancy</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<tree string="Occupancy Detail">-->
+                    <!--<field name="name"/>-->
+                    <!--<field name="room"/>-->
+                <!--</tree>-->
+            <!--</field>-->
+        <!--</record>-->
+
+        <!--<record model="ir.actions.act_window" id="action_occupancy_id">-->
+            <!--<field name="name">Occupancy</field>-->
+            <!--<field name="res_model">occupancy.occupancy</field>-->
+            <!--<field name="view_mode">tree,form</field>-->
+        <!--</record>-->
 
 
         <menuitem name="Tour Management" id="base.menu_tour_root"
@@ -1675,6 +1726,8 @@
                   id="tour_visa_menu_all"/>
         <menuitem action="action_tour_inv_list" parent="menu_familu"
                   sequence="5" id="tour_inv_menu_all"/>
+
+        <!--<menuitem action="action_occupancy_id" parent="menu_tour_configuration" id="occupancy_menu"/>-->
 
 
     </data>

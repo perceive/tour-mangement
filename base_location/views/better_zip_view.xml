@@ -13,6 +13,7 @@
                         <field name="code"/>
                         <field name="state_id"/>
                         <field name="country_id"/>
+                        <!--<field name="hotel_ids" invisible="1"/>-->
                     </group>
                     <notebook>
                         <page string="Description">
@@ -21,6 +22,7 @@
                                 <tree editable="bottom">
                                     <field name="days" string="Sequence"/>
                                     <field name="Description" string="Description"/>
+                                    <field name="image" widget="image" height="150px" width="150px"/>
                                 </tree>
                             </field>
                         </page>
